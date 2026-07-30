@@ -457,3 +457,84 @@ fill on iPad Safari, and the conventional lane's arrows reading "D4 reopens 2 Co
 Concept block. Both fixes are confirmed by observation rather than by my inference from matching bytes —
 which matters, because the session's egress policy blocks the Pages domain, so every claim I have made
 about the live page has been about the file rather than the page.
+
+---
+
+## 12. The first challenge to what the model argues, not to how it looks
+
+Everything in §1 through §11 was about execution: wrong arrows, invisible buttons, an unachievable
+criterion. This entry is different. The reviewer challenged a premise, was right, and the model changed.
+
+**The argument, as they made it.** Keeping the prototype brings no value if the full triad already holds
+all the necessary information — and there is a case that starting from scratch is *better* with agents
+against a good spec, not merely equivalent.
+
+**Why it holds.** If 5.2 specifies the input contract, expected outputs, component names, repo
+conventions and what must not be touched, the prototype's informational value is already captured. What
+remains is code, and inherited code is not obviously an asset when the binding constraint is review
+rather than generation: reviewing code generated against a spec is bounded by the spec, while reviewing a
+modified prototype means also auditing everything the prototype already did, which nobody wrote down. A
+prototype is a pile of undocumented decisions, which is the thing 5.2 exists to remove. And its structure
+constrains the build even where the spec disagrees, invisibly in a diff.
+
+**What I had said before, and withdraw.** In answering an earlier question I offered the caveat that
+"reusing a high-fidelity prototype plausibly saves some build effort, and the model gives it no credit",
+and framed the flat 12.5-day penalty as the model being one-sided. That caveat was the weaker position
+and I should not have offered it as a balance. The reviewer's argument is the stronger one.
+
+**What neither of us can supply.** The reviewer noted that some sources argue for starting from scratch
+with current models. I could not produce those sources, and did not try to reason as though I had: the
+mechanism above is an argument, not evidence. That is the artifact's own footnote applying to the people
+building it — a simulation of AI benefits, built with AI, argues in a circle.
+
+### The consequence: the model was wrong in the opposite direction
+
+The argument does not just remove a phantom upside. It says the *downside must vary with the spec level*,
+and `D9` flatly refused to. Its `caughtAt` was `{triad:8, human:8, thin:8}` — keeping the prototype cost
+exactly 12.5 days whether you had written a full triad or thin annotations. By the logic of the rest of
+the artifact that cannot be right: against a triad the prototype is redundant, while against thin
+annotations the prototype *is* the contract.
+
+Changed to `{triad:6, human:7, thin:8}`, on the owner's instruction. Each value has a reason:
+
+| Level | Caught at | Why |
+|---|---|---|
+| Full triad | **6 Build** | 5.2 names components, conventions and what must not be touched, so prototype code that violates them is visible in build review. |
+| Human-readable | **7 Test** | 5.1 describes flows and states but no contract and no scenarios, so the mismatch surfaces when a person tests behaviour against it. |
+| Thin | **8 production** | Nothing exists to check the prototype against; its decisions are the contract, so nothing catches it. |
+
+**Effect.** The cost of keeping the prototype now ranges 4.5 → 6.5 → 12.5 days, a 2.8× spread, and the
+two viewer decisions **interact** rather than sum. That is a materially more interesting claim than the
+flat penalty, and it is the first time the model says something that could not be read off either
+decision alone.
+
+| Path | Probes deleted | Probes kept | Cost of keeping |
+|---|---|---|---|
+| Full triad | 52.7 | 57.2 | +4.5 |
+| Human-readable | 76.9 | 83.4 | +6.5 |
+| Thin | 117.5 | 130.0 | +12.5 |
+
+### Two spec documents changed, which is worth stating plainly
+
+This is the first change that could not be made in `demo.html` alone.
+
+- **`SPEC-machine.md`** — `D9`'s `caughtAt` updated, plus a paragraph explaining why it varies. The
+  defect table is the authoritative contract; leaving it stale would have made the spec fiction.
+- **`SPEC-tests.md`** — **A5 as written was false** after this change. It said "escaping to production, on
+  every spec level". Reworded to state that the catch stage depends on the spec level and that `D9`
+  escapes on the thin path only.
+
+`A4` was left alone: "`triad === 0`, `human === 0` when probes deleted, `thin > 0`" is still true, and is
+now satisfied *unconditionally* for triad and human rather than only when probes are deleted. The "when
+probes deleted" qualifier existed because of the old flat `D9` and is now vestigial. Not edited, because
+it is not wrong.
+
+Verified after the change: A2 holds on both probe branches (57.2 < 83.4 < 130.0 and 52.7 < 76.9 < 117.5),
+A3 unchanged at +8.80%, A6 rework fires correctly on all three levels with `D9` reopening stage 3, A7 one
+row per defect, A8 unaffected. 577 lines. Contrast clean, keyboard clean, 2.9ms recompute.
+
+**The honest caveat on the new numbers.** 6, 7 and 8 are three invented values with a stated rationale
+and no evidence, exactly like every other number in this file. What changed is not that the model became
+true — it became *interesting*, and its shape now matches an argument someone made out loud and can be
+disagreed with. That is a better position than a flat penalty nobody could interrogate, and it is still
+not measurement.
