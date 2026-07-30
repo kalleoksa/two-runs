@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The spine — AI-assisted delivery, stage by stage</title>
+<style>
+  :root{
+    --paper:#EDEEF0;
+    --panel:#F7F8F9;
+    --ink:#14161A;
+    --ink-soft:#5C6270;
+    --rule:#C8CCD2;
+    --cheap:#2F4BA0;
+    --dear:#9C3B2E;
+    --mono:ui-monospace,"SFMono-Regular","IBM Plex Mono",Menlo,monospace;
+    --sans:ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);line-height:1.45;padding:clamp(20px,4vw,56px);
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-soft);padding-bottom:10px;border-bottom:1px solid var(--rule);margin-bottom:22px;
+  }
+  h1{font-size:clamp(26px,4.4vw,44px);line-height:1.06;letter-spacing:-.025em;font-weight:650;margin:0 0 14px;max-width:24ch}
+  h1 em{font-style:normal;color:var(--dear)}
+  .sub{max-width:64ch;color:var(--ink-soft);font-size:clamp(14px,1.6vw,17px);margin:0 0 40px}
+
+  h2{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+     color:var(--ink-soft);font-weight:500;margin:0 0 12px}
+
+  /* stage rows */
+  .phase-label{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-soft);display:flex;align-items:center;gap:10px;margin:0 0 10px;
+  }
+  .phase-label::after{content:"";flex:1;height:1px;background:var(--rule)}
+
+  .row{display:grid;gap:10px;margin-bottom:34px}
+  .r5{grid-template-columns:repeat(5,1fr)}
+  .r4{grid-template-columns:repeat(4,1fr)}
+
+  .stage{background:var(--panel);border:1px solid var(--rule);padding:14px 14px 12px;display:flex;flex-direction:column}
+  .num{font-family:var(--mono);font-size:20px;letter-spacing:-.02em;color:var(--ink);line-height:1;margin-bottom:8px}
+  .stage h3{font-size:14.5px;margin:0 0 8px;letter-spacing:-.01em;font-weight:600}
+  .stage p{margin:0 0 12px;font-size:13px;color:var(--ink-soft)}
+  .tag{
+    margin-top:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding-top:9px;border-top:1px solid var(--rule);
+  }
+  .t-human{color:var(--dear)}
+  .t-mixed{color:var(--ink-soft)}
+  .t-agent{color:var(--cheap)}
+
+  /* the gate */
+  .gate{border:1.5px solid var(--ink);background:var(--panel);padding:clamp(16px,2.5vw,26px);margin-bottom:34px}
+  .gate-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px;margin-bottom:6px}
+  .gate-head .num{font-size:30px;margin:0}
+  .gate-head h3{font-size:clamp(18px,2.6vw,26px);margin:0;letter-spacing:-.02em;font-weight:650}
+  .gate-note{font-size:14.5px;color:var(--ink-soft);max-width:70ch;margin:0 0 20px}
+  .triad{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .spec{background:var(--paper);padding:14px}
+  .spec .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:6px}
+  .spec h4{margin:0 0 4px;font-size:14.5px;letter-spacing:-.01em}
+  .spec .who{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px}
+  .spec ul{margin:0;padding-left:16px;font-size:13px;color:var(--ink)}
+  .spec li{margin-bottom:3px}
+  .gate-rule{
+    margin:20px 0 0;padding-top:16px;border-top:1px solid var(--rule);
+    font-size:15px;max-width:78ch;
+  }
+  .gate-rule strong{color:var(--dear)}
+
+  /* loop */
+  .loop{border:1px dashed var(--ink-soft);padding:16px 18px;margin-bottom:40px;background:transparent}
+  .loop p{margin:0;font-size:14px;color:var(--ink-soft);max-width:78ch}
+  .loop b{color:var(--ink)}
+
+  .key{display:flex;flex-wrap:wrap;gap:18px;font-family:var(--mono);font-size:11px;
+       letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);
+       border-top:1px solid var(--rule);padding-top:16px;margin-bottom:34px}
+  .key span::before{content:"● ";font-size:13px}
+  .k-human::before{color:var(--dear)}
+  .k-mixed::before{color:var(--ink-soft)}
+  .k-agent::before{color:var(--cheap)}
+
+  .flags{border-top:1px solid var(--rule)}
+  .flag{display:grid;grid-template-columns:1fr 2.2fr;gap:clamp(12px,3vw,40px);
+        padding:15px 0;border-bottom:1px solid var(--rule);align-items:start}
+  .flag dt{font-weight:600;font-size:14.5px;letter-spacing:-.01em}
+  .flag dd{margin:0;font-size:14px;color:var(--ink-soft)}
+
+  @media (max-width:900px){
+    .r5,.r4{grid-template-columns:repeat(2,1fr)}
+    .triad{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    .r5,.r4{grid-template-columns:1fr}
+    .flag{grid-template-columns:1fr;gap:4px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">AI in design &amp; development · the spine · v1</div>
+
+  <h1>The spec is the <em>hinge</em>.</h1>
+  <p class="sub">Upstream of it, work is judgement and cannot be delegated. Downstream, work is execution against a written target. The spec is what decides which side a task falls on — so it is the one stage worth over-investing in, and the one this process is built around.</p>
+
+  <div class="key">
+    <span class="k-human">Human decides</span>
+    <span class="k-mixed">AI drafts, human owns</span>
+    <span class="k-agent">Delegate, then review</span>
+  </div>
+
+  <div class="phase-label">Upstream · establishing what is true and what is wanted</div>
+  <div class="row r5">
+    <div class="stage">
+      <div class="num">0</div>
+      <h3>Value hypothesis</h3>
+      <p>What problem, for whom, why now. Why AI at all rather than the conventional route. What it costs.</p>
+      <div class="tag t-human">Human decides</div>
+    </div>
+    <div class="stage">
+      <div class="num">1</div>
+      <h3>Scope</h3>
+      <p>Problem definition, user and business need, explicit non-goals.</p>
+      <div class="tag t-human">Human decides</div>
+    </div>
+    <div class="stage">
+      <div class="num">2</div>
+      <h3>Research</h3>
+      <p>Desk research, domain study, synthesis of existing material. AI compresses reading; it does not supply evidence.</p>
+      <div class="tag t-mixed">AI drafts, human owns</div>
+    </div>
+    <div class="stage">
+      <div class="num">3</div>
+      <h3>Concept &amp; probe</h3>
+      <p>Prompt-to-prototype, flows and states, edge-case sweeps, heuristic passes. Cheap artifacts to argue with, then real users.</p>
+      <div class="tag t-agent">Delegate, then review</div>
+    </div>
+    <div class="stage">
+      <div class="num">4</div>
+      <h3>Decide</h3>
+      <p>Continue, pivot, or drop. Written down, with the reason. This is the gate AI cannot stand in.</p>
+      <div class="tag t-human">Human decides</div>
+    </div>
+  </div>
+
+  <div class="gate">
+    <div class="gate-head">
+      <div class="num">5</div>
+      <h3>Specify — three readers, one intent</h3>
+    </div>
+    <p class="gate-note">One decision, written three ways for three audiences. Same content, different reader. If the three disagree, the work upstream is not finished.</p>
+
+    <div class="triad">
+      <div class="spec">
+        <span class="k">5.1</span>
+        <h4>Human-readable</h4>
+        <p class="who">Reader: the team</p>
+        <ul>
+          <li>User flows</li>
+          <li>States and error cases</li>
+          <li>UX copy</li>
+          <li>Accessibility requirements</li>
+          <li>Business cases</li>
+        </ul>
+      </div>
+      <div class="spec">
+        <span class="k">5.2</span>
+        <h4>Machine-readable</h4>
+        <p class="who">Reader: the model</p>
+        <ul>
+          <li>Intent</li>
+          <li>Inputs</li>
+          <li>Expected outputs</li>
+          <li>Known limitations</li>
+          <li>Conventions and patterns to follow</li>
+        </ul>
+      </div>
+      <div class="spec">
+        <span class="k">5.3</span>
+        <h4>Testable</h4>
+        <p class="who">Reader: the check</p>
+        <ul>
+          <li>Acceptance criteria</li>
+          <li>Test scenarios</li>
+          <li>Failure states</li>
+          <li>Performance expectations</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="gate-rule"><strong>Stop rule:</strong> if 5.2 and 5.3 cannot be written, stage 6 does not start. Not because the process says so — because unverifiable output is what makes AI expensive rather than fast.</p>
+  </div>
+
+  <div class="phase-label">Downstream · execution against a written target</div>
+  <div class="row r4">
+    <div class="stage">
+      <div class="num">6</div>
+      <h3>Build</h3>
+      <p>Agents against the machine-readable spec, inside repo conventions. Scaffolding, glue, mechanical change, variants at volume.</p>
+      <div class="tag t-agent">Delegate, then review</div>
+    </div>
+    <div class="stage">
+      <div class="num">7</div>
+      <h3>Test</h3>
+      <p>Rule-checkable first: types, lint, unit, accessibility rules. Bug hunting and coverage expansion. Taste and security stay human.</p>
+      <div class="tag t-agent">Delegate, then review</div>
+    </div>
+    <div class="stage">
+      <div class="num">8</div>
+      <h3>Release &amp; measure</h3>
+      <p>A/B tests, monitoring, analytics, feedback clustering. Cycle time and rework rate, not perceived speed.</p>
+      <div class="tag t-mixed">AI drafts, human owns</div>
+    </div>
+    <div class="stage">
+      <div class="num">9</div>
+      <h3>Record</h3>
+      <p>What was delegated, what came back wrong, what the review cost. The only stage that makes the next loop cheaper.</p>
+      <div class="tag t-human">Human decides</div>
+    </div>
+  </div>
+
+  <div class="loop">
+    <p><b>The return path.</b> Stage 9 feeds 0 and 2 — not as a decorative arrow, as the actual input. Two things travel back: <b>evidence</b> (what shipped, what it did) and <b>failures</b> (which delegations were not worth the review). Without the second, the process only ever accumulates optimism.</p>
+  </div>
+
+  <h2>What this deliberately fixes</h2>
+  <div class="flags">
+    <dl>
+      <div class="flag">
+        <dt>Stage 9 exists</dt>
+        <dd>Your board had the right question — "have we done it, and what did we learn?" — as a template field that is empty nearly everywhere. A field nobody fills is not a process step. Making it a stage with an owner is the change.</dd>
+      </div>
+      <div class="flag">
+        <dt>The spec triad is promoted</dt>
+        <dd>It was a sub-branch of one step. It is the mechanism the whole thing runs on, so it gets the weight.</dd>
+      </div>
+      <div class="flag">
+        <dt>Synthetic users are a probe, not evidence</dt>
+        <dd>Simulated personas and AI-generated journeys belong in stage 3 for cheap coverage of cases you would not have thought of. They cannot close stage 4. Keep the line visible or it will be crossed quietly.</dd>
+      </div>
+      <div class="flag">
+        <dt>Stakeholder columns are gone</dt>
+        <dd>Teams are not stages. Each stage names who decides; which team that is varies by project and does not belong in the map.</dd>
+      </div>
+    </dl>
+  </div>
+
+</div>
+</body>
+</html>

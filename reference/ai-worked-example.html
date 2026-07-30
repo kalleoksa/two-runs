@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worked example — self-service cancellation</title>
+<style>
+  :root{
+    --paper:#EDEEF0;
+    --panel:#F7F8F9;
+    --ink:#14161A;
+    --ink-soft:#5C6270;
+    --rule:#C8CCD2;
+    --cheap:#2F4BA0;
+    --dear:#9C3B2E;
+    --mono:ui-monospace,"SFMono-Regular","IBM Plex Mono",Menlo,monospace;
+    --sans:ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+       line-height:1.5;padding:clamp(20px,4vw,56px)}
+  .wrap{max-width:960px;margin:0 auto}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--ink-soft);padding-bottom:10px;border-bottom:1px solid var(--rule);margin-bottom:22px}
+  h1{font-size:clamp(25px,4.2vw,40px);line-height:1.08;letter-spacing:-.025em;font-weight:650;margin:0 0 16px;max-width:26ch}
+  h1 em{font-style:normal;color:var(--dear)}
+  .lede{max-width:66ch;font-size:clamp(15px,1.7vw,18px);color:var(--ink-soft);margin:0 0 34px}
+
+  h2{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);
+     font-weight:500;margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+  section{margin-bottom:46px}
+
+  /* brief box */
+  .brief{background:var(--panel);border:1px solid var(--rule);padding:clamp(16px,2.4vw,24px);margin-bottom:44px}
+  .brief dl{display:grid;grid-template-columns:auto 1fr;gap:8px 20px;margin:0;font-size:14.5px}
+  .brief dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+            color:var(--ink-soft);padding-top:4px}
+  .brief dd{margin:0}
+
+  /* effort bars */
+  .bars{margin-bottom:12px}
+  .bar-row{margin-bottom:16px}
+  .bar-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+             color:var(--ink-soft);margin-bottom:6px}
+  .bar{display:flex;height:38px;border:1px solid var(--rule);background:var(--panel)}
+  .seg{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--paper);
+       font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;
+       color:#fff;overflow:hidden;white-space:nowrap}
+  .seg:last-child{border-right:none}
+  .s-disc{background:#7C8798}
+  .s-conc{background:#5C6270}
+  .s-spec{background:var(--dear)}
+  .s-build{background:var(--cheap)}
+  .s-test{background:#4A6FB5}
+  .s-rel{background:#9AA3B0}
+  .s-rec{background:#14161A}
+  .bar-caption{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 34px;line-height:1.7}
+
+  /* stages */
+  .stage{border-top:1px solid var(--rule);padding:22px 0}
+  .stage:last-of-type{border-bottom:1px solid var(--rule)}
+  .stage-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:4px}
+  .stage-head .n{font-family:var(--mono);font-size:19px;line-height:1}
+  .stage-head h3{margin:0;font-size:17.5px;letter-spacing:-.015em;font-weight:650}
+  .dur{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .owner{font-size:13px;color:var(--ink-soft);margin:0 0 12px}
+  .stage p{margin:0 0 10px;font-size:15px;max-width:78ch}
+  .stage ul{margin:0 0 12px;padding-left:18px;font-size:14.5px;max-width:78ch}
+  .stage li{margin-bottom:4px}
+  .out{font-size:14px;padding:10px 12px;background:var(--panel);border-left:2px solid var(--cheap);margin:0 0 10px;max-width:78ch}
+  .out b{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:3px}
+  .went{font-size:14px;color:var(--ink-soft);max-width:78ch;margin:0 0 10px}
+  .went b{color:var(--dear);font-weight:600}
+  .rule{font-size:14px;max-width:78ch;margin:0;padding:10px 12px;
+        border:1px dashed var(--dear);color:var(--ink)}
+  .rule b{color:var(--dear);font-weight:600}
+
+  .stop{border-left:3px solid var(--dear);padding:2px 0 2px 16px;margin:0 0 34px}
+  .stop p{margin:0;font-size:15.5px;max-width:78ch}
+
+  .tally{border-top:1px solid var(--rule)}
+  .t-row{display:grid;grid-template-columns:1fr 2fr;gap:clamp(12px,3vw,36px);padding:14px 0;
+         border-bottom:1px solid var(--rule);align-items:start}
+  .t-row dt{font-weight:600;font-size:15px}
+  .t-row dd{margin:0;font-size:14.5px;color:var(--ink-soft)}
+
+  .footnote{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.7;
+            border-top:1px solid var(--rule);padding-top:16px;max-width:82ch}
+
+  @media (max-width:640px){
+    .brief dl{grid-template-columns:1fr;gap:2px 0}
+    .brief dt{padding-top:10px}
+    .t-row{grid-template-columns:1fr;gap:4px}
+    .seg{font-size:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">AI in design &amp; development · worked example · v1</div>
+
+  <h1>One ordinary project, run through the spine.</h1>
+  <p class="lede">Nothing exotic — a mid-size feature on an existing product, the kind of work that fills most quarters. The point is to show where effort actually moves, what each stage produces, and what came back wrong. Durations and numbers are illustrative; the shape is the argument.</p>
+
+  <div class="brief">
+    <dl>
+      <dt>Project</dt><dd>Self-service subscription cancellation for a consumer service (web + app), replacing a phone-and-email-only process.</dd>
+      <dt>Why</dt><dd>Cancellations are roughly a third of contact-centre volume. Regulators in two markets now require a self-service path. Trust cost of the current process is high.</dd>
+      <dt>Team</dt><dd>PM, product designer, service designer (part-time), content designer (part-time), frontend dev, backend dev, QA, tech lead (review only).</dd>
+      <dt>Not why</dt><dd>AI is not the reason for the project. It changes how the work is done, not whether it is worth doing.</dd>
+    </dl>
+  </div>
+
+  <section>
+    <h2>Where the effort goes</h2>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-label">Conventional run</div>
+        <div class="bar" role="img" aria-label="Conventional effort split: discovery 15, concept 22, spec 6, build 35, test 14, release 8">
+          <div class="seg s-disc" style="width:15%">Discover 15</div>
+          <div class="seg s-conc" style="width:22%">Concept 22</div>
+          <div class="seg s-spec" style="width:6%">Spec 6</div>
+          <div class="seg s-build" style="width:35%">Build 35</div>
+          <div class="seg s-test" style="width:14%">Test 14</div>
+          <div class="seg s-rel" style="width:8%">Release 8</div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">This run</div>
+        <div class="bar" style="width:78%" role="img" aria-label="AI-assisted effort split: discovery 10, concept 14, spec 18, build 14, test 12, release 6, record 4, on a shorter total bar">
+          <div class="seg s-disc" style="width:12.8%">Disc 10</div>
+          <div class="seg s-conc" style="width:17.9%">Concept 14</div>
+          <div class="seg s-spec" style="width:23.1%">Spec 18</div>
+          <div class="seg s-build" style="width:17.9%">Build 14</div>
+          <div class="seg s-test" style="width:15.4%">Test 12</div>
+          <div class="seg s-rel" style="width:7.7%">Rel 6</div>
+          <div class="seg s-rec" style="width:5.2%">Rec 4</div>
+        </div>
+      </div>
+    </div>
+    <p class="bar-caption">Spec triples. Build drops by roughly 60%. Total falls by something like a fifth — not eightfold — and most of that comes from fewer rework loops rather than faster production. Review time is counted inside build and test, which is why they do not shrink proportionally.</p>
+
+    <div class="stop">
+      <p>If the spec bar does not grow, the build bar does not shrink. Teams that keep a six-percent spec stage and delegate the build get the same total effort back as review and rework, distributed less visibly.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stage by stage</h2>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">0</span><h3>Value hypothesis</h3><span class="dur">2 days</span></div>
+      <p class="owner">PM decides. No delegation.</p>
+      <p>Deflection target, regulatory deadline, guard metrics named up front: refund complaints, cancel-then-return rate, contact-centre volume for adjacent reasons. Cost estimated and written down.</p>
+      <div class="out"><b>Out</b>One page: hypothesis, target, guard metrics, budget, kill criteria.</div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">1</span><h3>Scope</h3><span class="dur">2 days</span></div>
+      <p class="owner">PM with tech lead and service designer.</p>
+      <p>In: monthly self-serve plans. Out: annual, enterprise, partner-billed, family-plan secondary members. Non-goals written explicitly, because this is the list agents will otherwise cheerfully build against later.</p>
+      <div class="out"><b>Out</b>Scope note with an explicit non-goals section.</div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">2</span><h3>Research</h3><span class="dur">4 days</span></div>
+      <p class="owner">Product designer and service designer own it; AI compresses the reading.</p>
+      <ul>
+        <li>~8,000 support tickets and call summaries clustered by an assistant into candidate themes in an afternoon. Previously two weeks of sampling.</li>
+        <li>A hand-coded sample of 100 tickets checked against the clusters. Two clusters were artifacts of phrasing and got merged; one real theme had been split in three.</li>
+        <li>Service designer maps the existing channel path, including what the retention team does on the phone today — the part no tool can see.</li>
+      </ul>
+      <div class="out"><b>Out</b>Theme set with counts, current-state service map, list of what is not known.</div>
+      <p class="went"><b>Came back wrong:</b> cluster labels read as findings. They are hypotheses with a count attached. The hand-check is not optional, and it is what the time saved should be spent on.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">3</span><h3>Concept &amp; probe</h3><span class="dur">1.5 weeks</span></div>
+      <p class="owner">Product designer, content designer, QA joins early.</p>
+      <ul>
+        <li>Three clickable variants generated from prompts in a day and a half, using real component names. They exist to be argued with, not shipped.</li>
+        <li>Edge-case sweep: an assistant produces 40 scenarios from the domain model — mid-cycle cancellation, failed last payment, active billing dispute, family-plan owner leaving, cancellation during a promo lock-in, account in collections. Roughly ten were nonsense; four were cases nobody on the team had raised.</li>
+        <li>Six moderated sessions on variant B. Users found five problems the simulated passes did not, including the one that mattered: people cancel expecting to be talked out of it and read a frictionless flow as indifference.</li>
+      </ul>
+      <div class="out"><b>Out</b>Chosen direction, 34 surviving scenarios, session findings, open legal questions.</div>
+      <p class="went"><b>Came back wrong:</b> simulated personas produced confident, plausible, wrong emotional read of a churn moment. Useful for state coverage. Worthless for whether the thing feels fair.</p>
+      <p class="rule"><b>Rule — probes are deleted at stage 4.</b> All three variants were discarded once the direction was chosen. Nothing from them enters the repository. Paper prototypes could never be mistaken for a product; these can, and the pressure to keep the one that looks nearly finished is the single most reliable way this stage corrupts the two after it. Deletion is the enforcement mechanism, and it has to be a rule rather than an intention.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">4</span><h3>Decide</h3><span class="dur">1 day</span></div>
+      <p class="owner">PM decides. Tech lead, legal, service designer consulted.</p>
+      <p>Variant B proceeds. No retention offer before the cancellation is confirmed — legal risk in one market, trust cost in both. Offer moves to the confirmation screen instead. The reason is recorded, because in four months someone will ask why the funnel has no save step.</p>
+      <div class="out"><b>Out</b>Decision record: what, why, what was rejected, who was in the room.</div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">5</span><h3>Specify — three readers</h3><span class="dur">1 week</span></div>
+      <p class="owner">PM owns coherence. Designers own 5.1, PM and tech lead own 5.2, QA owns 5.3.</p>
+      <ul>
+        <li><b>5.1 human-readable</b> — flows, every state including the ugly ones, final copy from the content designer with legally reviewed refund and proration wording, accessibility requirements.</li>
+        <li><b>5.2 machine-readable</b> — intent, input contract against the actual subscription object, expected outputs and side effects, known limitations (no annual plans, no partner billing), design system component names, repo conventions to follow, and an explicit list of what must not be touched: the billing adapter, the entitlement service.</li>
+        <li><b>5.3 testable</b> — acceptance criteria per state, the 34 scenarios from stage 3 turned into test cases, failure states with expected behaviour, performance budget, accessibility checks as rules.</li>
+      </ul>
+      <div class="out"><b>Out</b>Three documents in the repo, in version control, reviewed together in one sitting. Where they disagreed, stage 4 was wrong and got reopened for half a day.</div>
+      <p class="went"><b>Came back wrong:</b> the first 5.2 draft described the subscription object as the designer understood it, not as the API returns it. Caught in review, which is precisely the point of writing it before building.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">6</span><h3>Build</h3><span class="dur">1.5 weeks</span></div>
+      <p class="owner">Frontend and backend devs orchestrate; tech lead reviews on booked time.</p>
+      <ul>
+        <li>Frontend: screens and states scaffolded from tokens and 5.2 in two days for what was previously a week. Human-written: the interruption logic and focus management, which the spec could describe but not resolve.</li>
+        <li>Backend: API surface, validation, and tests generated. Proration and refund arithmetic written by hand, line by line, and reviewed twice — expensive to verify, catastrophic to get wrong, and money is the one place where plausible is not good enough.</li>
+        <li>Migration generated, read fully before running. Review is booked as three half-days in advance; without that, the tech lead becomes the bottleneck and the whole gain evaporates into a queue.</li>
+      </ul>
+      <div class="out"><b>Out</b>Feature behind a flag, tests passing, review notes recorded.</div>
+      <p class="went"><b>Came back wrong:</b> an agent invented a plausible subscription status value that does not exist in the domain, and wrote handling for it. Tests passed, because it also wrote the tests. Found in review by a human who knows the enum. This is the characteristic failure of the whole approach: internally consistent and wrong.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">7</span><h3>Test</h3><span class="dur">3 days</span></div>
+      <p class="owner">QA owns the definition of correct; automation does the running.</p>
+      <ul>
+        <li>Rule-checkable first and cheaply: types, lint, unit, contract tests, automated accessibility rules.</li>
+        <li>The 34 scenarios run as a suite. Two failed on timezone handling at billing-period boundaries.</li>
+        <li>Human exploratory testing on the money path and on screen-reader flow — the two places where passing rules and being right are different things.</li>
+        <li>Security gate as policy-as-code in the pipeline, plus one human pass on anything touching billing.</li>
+      </ul>
+      <div class="out"><b>Out</b>Suite in CI, two defects fixed, one accepted and documented.</div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">8</span><h3>Release &amp; measure</h3><span class="dur">2 weeks observation</span></div>
+      <p class="owner">PM owns the read; analysis is assisted.</p>
+      <p>Ten percent rollout. Deflection tracked against the guard metrics from stage 0, not on its own — a cancellation flow can post excellent deflection numbers while quietly generating refund complaints. Feedback and new tickets clustered by assistant, sampled by hand, same discipline as stage 2.</p>
+      <div class="out"><b>Out</b>Result against hypothesis, guard metrics, decision to expand or hold.</div>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="n">9</span><h3>Record</h3><span class="dur">Half a day</span></div>
+      <p class="owner">Tech lead and PM. The stage everyone skips.</p>
+      <ul>
+        <li>What was delegated and what it cost to check. Review hours actual against planned: booked six half-days, used eight.</li>
+        <li>What came back wrong: invented enum, drifted subscription contract, timezone at period boundaries, generated copy that failed legal tone twice.</li>
+        <li>What moved down the axis and why: the design system components made frontend scaffolding genuinely cheap. Billing did not move at all and should not be expected to next time either.</li>
+        <li>Substrate updates: three conventions added to the repo file, one component documented properly, domain enums written where a model can read them.</li>
+      </ul>
+      <div class="out"><b>Out</b>Registry entries with outcomes, including the negative ones. This is the only stage that makes the next project cheaper.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What actually produced the gain</h2>
+    <div class="tally">
+      <dl>
+        <div class="t-row">
+          <dt>An existing design system</dt>
+          <dd>Frontend scaffolding was cheap because tokens and documented components existed. On a product without them, that stage does not compress and the whole shape reverts.</dd>
+        </div>
+        <div class="t-row">
+          <dt>Edge cases found in stage 3, not stage 7</dt>
+          <dd>Four unconsidered scenarios surfaced at concept stage for the cost of an afternoon. Found after build, each one is a rework loop. This is where most of the time saving actually came from.</dd>
+        </div>
+        <div class="t-row">
+          <dt>Review booked in advance</dt>
+          <dd>Treated as scheduled capacity, not goodwill. The single most common way this shape fails is an unbooked senior reviewer.</dd>
+        </div>
+        <div class="t-row">
+          <dt>Money left alone</dt>
+          <dd>Proration and refunds written and reviewed by humans. Deliberately not delegated, deliberately slower, and the reason nothing expensive shipped broken.</dd>
+        </div>
+        <div class="t-row">
+          <dt>None of this is a new lesson</dt>
+          <dd>Contact with reality before commitment is what coded prototypes, spikes, tracer bullets, TDD, and dual-track discovery were all for. Brooks was arguing it in 1975. Teams that ran those practices properly captured most of the same gain with no tooling at all. The claim here is narrower and more defensible: AI lowers the price of discipline we already knew worked — the third concept direction that gets cut for time now gets built, and a two-hour artifact carries no sunk cost when it is abandoned. That is a cost argument, not a capability argument.</dd>
+        </div>
+        <div class="t-row">
+          <dt>The one operation without a cheap predecessor</dt>
+          <dd>Combinatorial state enumeration against a domain model. A coded prototype cannot tell you about accounts in collections or promo lock-in — you have to already suspect those states to build them. Generating candidates is a different operation from probing reality: low precision, high recall, which is the correct trade at concept stage and was previously not available at any price.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <p class="footnote">Honest accounting: roughly five and a half weeks against seven or eight for the conventional run, on a team that already had tests, tokens, and a documented domain. Two people reported feeling substantially faster than that; the calendar disagreed, which is the expected gap and the reason stage 9 records hours rather than impressions. On a codebase without those preconditions, the same process would likely have been slower than not using AI at all. One regression worth naming against the older practice: organisations that never managed coded prototypes mostly failed for cultural reasons rather than cost ones, and those organisations will now be handed artifacts that look finished. Cheaper probes do not create the discipline to throw them away.</p>
+
+</div>
+</body>
+</html>
