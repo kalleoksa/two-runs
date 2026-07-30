@@ -84,7 +84,7 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 `<= 5`). Formatting and layout functions do contain literals — rounding factors, label-width thresholds
 — which C2's wording does not cover.
 
-**D5** — 559 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
+**D5** — 569 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
 
 **E4 was checked in one state only**, which is how §9 got through. See there.
 
@@ -92,8 +92,8 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 
 ## 3. Defects in the build, and who caught them
 
-Five. Four mine, **one found by the human reviewer** — see §9, which is the first entry in this log that
-is not the builder marking its own homework.
+Six. Four mine, **two found by the human reviewer** — see §9 and §10, the first entries in this log that
+are not the builder marking its own homework.
 
 1. **Crash on load: `a.specMultipliers[null].reviewRate`.** The review-hours branch dereferenced the
    spec multipliers for build/test stages before a spec level existed, so the page died at stage 0 —
@@ -376,3 +376,48 @@ the 5.3 document, not just in my execution of it.
 **Also not checked, still**: `:focus-visible` against every background, the `.bad` invalid-input state,
 and `:disabled` contrast. Same class of omission. Not fixed, because I have not measured them, and
 saying they are fine would be repeating the mistake.
+
+---
+
+## 10. Found by the human reviewer: the conventional lane's rework arrows pointed nowhere
+
+Reported as comprehension trouble — "this tool is a bit hard to understand, I don't get the idea behind
+conventional run reworks" — which turned out to be the correct reading of a picture that was lying.
+
+**The bug.** `introducedAt` is a single value per defect, written in **assisted-stage** terms. The arrow
+renderer used it as an index into whichever lane it was drawing, so in the conventional lane it selected
+a phase by number from a list that numbers entirely different things:
+
+| Arrow said | Meant, in assisted terms | Actually pointed at |
+|---|---|---|
+| D4 rework to 3 | 3 Concept & probe | 3 Design to spec |
+| D6 rework to 4 | 4 Decide | 4 Handoff |
+| D8 rework to 5 | 5 Specify | 5 Build |
+
+The rework *count* and *cost* were right, so nothing I had asserted failed. Only the arrows were wrong,
+and since both lanes render small bare numbers with no indication that they use separate numbering, a
+reader had no way to detect it. The reviewer could tell something was incoherent but not what.
+
+**The spec gap underneath it.** `SPEC-machine.md` provides `conventionalCaughtAt` but no
+`conventionalIntroducedAt`. There is no data for where a defect is introduced in the conventional lane.
+`CLAUDE.md` says that where both specs are silent I should stop and ask rather than decide — and this is
+precisely a case where I did not. I silently reused the assisted number as if it were a conventional
+one. That is the third invented answer in this log, and the only one invented without noticing.
+
+**Resolution, chosen by the model owner** from three options put to them: map the assisted `introducedAt`
+to the conventional phase sharing its `kind`. Concept & probe and Decide both map to 2 Concept, Specify
+to 3 Design to spec, Build to 5 Build. Every `introducedAt` in the table maps cleanly. This invents one
+structural rule rather than seven numbers, and it is checkable by inspection. The two rejected options
+were dropping the arrows from that lane entirely (invents nothing, but the conventional lane stops
+showing where its rework goes) and adding a seventh column to the defect table (most precise, seven new
+claims to defend).
+
+Arrows in **both** lanes now name their destination — "D4 reopens 2 Concept" rather than "D4 rework to 3"
+— which removes the cross-lane numbering ambiguity that hid the bug. Verified by measuring each arrow's
+left edge against the segment rectangles in both lanes: every arrow now lands on the block it names.
+
+**What this says about the artifact as a presentation object.** Two of the three reviewer-facing problems
+found so far (§9, §10) were invisible to a passing criteria suite and obvious to a person looking at the
+screen for thirty seconds. Neither is in `SPEC-tests.md`, and neither could be. The 5.3 document covers
+the model thoroughly and the rendered picture barely at all — it constrains numbers, not whether the
+drawing of them means anything.
