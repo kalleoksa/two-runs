@@ -83,7 +83,9 @@
         background:var(--panel);color:var(--ink);width:100%}
   input.bad{border-color:var(--dear);border-width:2px}
   button{font-size:10px;padding:9px 13px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer}
-  button:hover:not(:disabled){background:var(--paper)}
+  /* :hover must not outrank .on, or the chosen button loses its fill and keeps its light
+     text. Gated on hover:hover so a tap on a touch device cannot leave a stuck hover state. */
+  @media (hover:hover){button:hover:not(:disabled):not(.on){background:var(--paper)}}
   button:disabled{color:var(--ink-soft);border-color:var(--rule);cursor:default}
   button.on{background:var(--ink);color:var(--panel)}
   :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -274,6 +276,11 @@ function scaleMax(a){
   const each=LEVELS.map(l=>upTo(run('assisted',l[0],true,ASSISTED_STAGES,a),Infinity,a).effort);
   return Math.max(conv,...each);
 }
+function introducedIn(d,lane){
+  const src=ASSISTED_STAGES.find(s=>s.n===d.introducedAt);
+  if(lane==='assisted') return src;
+  return CONVENTIONAL_PHASES.find(p=>p.kind===src.kind);
+}
 function orderingHolds(a){
   const m=a.specMultipliers, e=a.specEffort;
   return m.thin.build>=m.human.build&&m.human.build>=m.triad.build
@@ -302,7 +309,7 @@ function escSeg(escTotal,total,max){
     `title="Escaped to production — ${f1(escTotal)} assumed effort days, paid after release">`+
     (ofMax>=6?`<span>Escaped</span>`:'')+(ofMax>=2.5?`<span>${f1(escTotal)}</span>`:'')+`</div>`;
 }
-function lane(title,rows,max,grey,a,extra){
+function lane(title,rows,max,grey,laneKind,extra){
   const total=rows.reduce((t,x)=>t+x.total,0), escTotal=rows.reduce((t,x)=>t+x.escPart,0);
   const w=total?total/max*100:0;
   return `<div class="lane"><div class="lab">${title} · <b>${f1(total)}</b> assumed effort days`+
@@ -311,9 +318,9 @@ function lane(title,rows,max,grey,a,extra){
     rows.map(r=>r.stage.name+' '+f1(r.total-r.escPart)).join(', ')+
     (escTotal?`, escaped to production ${f1(escTotal)}`:'')+`">`+
     rows.map(r=>seg(r,total,max)).join('')+escSeg(escTotal,total,max)+
-    `</div></div>${arrows(rows,total,max,escTotal)}</div>`;
+    `</div></div>${arrows(rows,total,max,escTotal,laneKind)}</div>`;
 }
-function arrows(rows,total,max,escTotal){
+function arrows(rows,total,max,escTotal,laneKind){
   if(!total) return '';
   const left={},wid={};let cum=0;
   rows.forEach(r=>{left[r.stage.n]=cum;wid[r.stage.n]=(r.total-r.escPart)/total*100;cum+=wid[r.stage.n];});
@@ -321,15 +328,19 @@ function arrows(rows,total,max,escTotal){
   if(escTotal){left[PROD_STAGE]=cum;wid[PROD_STAGE]=escTotal/total*100;}
   const items=[];
   rows.forEach(r=>r.rework.forEach(x=>{
-    if(left[x.d.introducedAt]===undefined) return;
-    const to=left[x.d.introducedAt]+wid[x.d.introducedAt]/2, from=left[x.caught]+wid[x.caught]/2;
-    items.push([to,Math.max(from-to,0),x]);
+    const dest=introducedIn(x.d,laneKind);
+    if(!dest||left[dest.n]===undefined) return;
+    const to=left[dest.n]+wid[dest.n]/2, from=left[x.caught]+wid[x.caught]/2;
+    const caughtRow=rows.find(y=>y.stage.n===x.caught);
+    const caughtName=x.caught===PROD_STAGE?'production':(caughtRow?caughtRow.stage.name:x.caught);
+    items.push([to,Math.max(from-to,0),x,dest,caughtName]);
   }));
   if(!items.length) return '';
   return `<div class="arrows" style="width:${total/max*100}%;height:${items.length*14+4}px">`+
-    items.map(([l,w,x],i)=>`<div class="arrow" style="left:${l}%;width:${w}%;top:${i*14}px" `+
-      `title="Rework loop: ${esc(x.d.label)} caught at stage ${x.caught}, introduced at stage ${x.d.introducedAt}">`+
-      `&larrhk; ${x.d.id} rework to ${x.d.introducedAt}</div>`).join('')+`</div>`;
+    items.map(([l,w,x,dest,caughtName],i)=>`<div class="arrow" style="left:${l}%;width:${w}%;top:${i*14}px" `+
+      `title="Rework loop: ${esc(x.d.label)} was found at ${esc(String(caughtName))} and sends `+
+      `${esc(dest.name)} back to be reopened">`+
+      `&larrhk; ${x.d.id} reopens ${dest.n} ${esc(dest.name)}</div>`).join('')+`</div>`;
 }
 
 /* ---------- render ---------- */
@@ -364,9 +375,9 @@ function draw(){
   const now=upTo(asst,idx,a), max=scaleMax(a);
   const pending=asst.rows.filter(x=>x.stage.n<=idx&&!x.determined);
   document.getElementById('lanes').innerHTML=
-    lane('Conventional run — fixed reference, unaffected by your choices',convAll.rows,max,true,a,
+    lane('Conventional run — fixed reference, unaffected by your choices',convAll.rows,max,true,'conventional',
       `${convAll.loops} rework loop${convAll.loops===1?'':'s'} · ${convAll.escaped.length} escaped`)+
-    lane('Assisted run — stages 0 to '+idx,now.rows,max,false,a,
+    lane('Assisted run — stages 0 to '+idx,now.rows,max,false,'assisted',
       pending.length?`stage ${pending.map(x=>x.stage.n).join(', ')} not yet costed — choice pending`:'');
   drawStage(asst,now);
   drawTally(now,convAll,idx);
@@ -390,7 +401,8 @@ function drawStage(asst,now){
       return `<li>${x.d.id} — ${esc(x.d.label)}. Introduced at stage ${x.d.introducedAt}, `+
         (escaped?`found in production`:`found here`)+
         `, assumed cost ${f1(state.assumptions.defectBaseCost*state.assumptions.catchCostMultiplier[x.caught])} days`+
-        (x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE?`, plus one rework loop back to stage ${x.d.introducedAt}`:'')+
+        (x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE?`, plus one rework loop reopening stage `+
+          `${x.d.introducedAt} ${esc(introducedIn(x.d,'assisted').name)}`:'')+
         `.${NO_CONVENTIONAL[x.d.id]?' '+esc(NO_CONVENTIONAL[x.d.id]):''}</li>`;
     }).join('')+`</ul></div>`;
   }
