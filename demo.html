@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Two runs — one brief, two processes</title>
+<style>
+  :root{
+    --paper:#EDEEF0;--panel:#F7F8F9;--ink:#14161A;--ink-soft:#5C6270;--rule:#C8CCD2;
+    --cheap:#2F4BA0;--dear:#9C3B2E;
+    --mono:ui-monospace,"SFMono-Regular","IBM Plex Mono",Menlo,monospace;
+    --sans:ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+       line-height:1.45;padding:clamp(20px,3vw,44px)}
+  .wrap{max-width:1180px;margin:0 auto}
+  .eyebrow,.lab,.seg,button,input,.big,th,.dur{font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
+  .eyebrow{font-size:11px;color:var(--ink-soft);padding-bottom:10px;border-bottom:1px solid var(--rule);margin-bottom:22px}
+  h1{font-size:clamp(24px,3.4vw,38px);line-height:1.07;letter-spacing:-.025em;font-weight:650;margin:0 0 14px;max-width:26ch}
+  .lede{max-width:72ch;color:var(--ink-soft);font-size:16px;margin:0 0 30px}
+  h2{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);
+     font-weight:500;margin:0 0 14px;padding-bottom:9px;border-bottom:1px solid var(--rule)}
+  section{margin-bottom:32px}
+  .lab{font-size:10px;color:var(--ink-soft);margin-bottom:6px}
+  .lab b{color:var(--ink);font-weight:400}
+  /* lanes */
+  .lane{margin-bottom:14px}
+  .rail{border:1px solid var(--rule);background:var(--panel)}
+  .strip{display:flex;height:40px}
+  .grey{filter:grayscale(.5)}
+  .seg{display:flex;align-items:center;justify-content:flex-start;gap:5px;padding:0 5px;overflow:hidden;
+       white-space:nowrap;font-size:9.5px;letter-spacing:.06em;min-width:0;border-right:1px solid var(--paper)}
+  .seg:last-child{border-right:none}
+  .esc{background:var(--paper);color:var(--dear);box-shadow:inset 0 0 0 1px var(--dear)}
+  .lt{color:var(--ink)}
+  .dk{color:var(--panel)}
+  .arrows{position:relative}
+  .arrow{position:absolute;height:11px;border:1px solid var(--dear);border-top:none;
+         font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;color:var(--dear);
+         padding-left:4px;line-height:1;overflow:hidden;white-space:nowrap}
+  /* stage */
+  .panel{border:1px solid var(--rule);background:var(--panel);padding:clamp(14px,2vw,22px)}
+  .shead{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:4px}
+  .shead .n{font-family:var(--mono);font-size:19px;line-height:1}
+  .shead h3{margin:0;font-size:17.5px;letter-spacing:-.015em;font-weight:650}
+  .dur{font-size:10px;color:var(--ink-soft)}
+  .owner{font-size:13px;color:var(--ink-soft);margin:0 0 10px}
+  .panel p{margin:0 0 10px;font-size:14.5px;max-width:78ch}
+  .out{font-size:13.5px;padding:9px 11px;background:var(--paper);border-left:2px solid var(--cheap);max-width:78ch}
+  .out b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+         color:var(--ink-soft);display:block;margin-bottom:3px}
+  .found{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--dear);font-size:13.5px;max-width:78ch}
+  .found b{color:var(--dear)}
+  .found ul{margin:6px 0 0;padding-left:17px}
+  .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+  .choice{border:1px solid var(--rule);background:var(--paper);padding:13px;display:flex;
+          flex-direction:column;gap:11px;align-items:flex-start}
+  .choice p{margin:0;font-size:13px;color:var(--ink-soft)}
+  .controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:14px}
+  .why{font-size:13px;color:var(--dear)}
+  /* tally */
+  .tally{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .tile{background:var(--panel);padding:11px 12px}
+  .tile .lab{margin:0}
+  .big{font-size:23px;letter-spacing:-.02em;display:block;margin:5px 0 1px}
+  .sub{font-size:11px;color:var(--ink-soft)}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{font-size:10px;color:var(--ink-soft);text-align:left;font-weight:500;padding:8px 10px;border-bottom:1px solid var(--rule)}
+  td{padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+  td.n{font-family:var(--mono);letter-spacing:.06em;white-space:nowrap}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;max-width:82ch}
+  .warn{border:1px solid var(--dear);padding:10px 12px;font-size:13.5px;margin:0 0 14px;max-width:82ch}
+  .warn b{color:var(--dear)}
+  /* assumptions */
+  .fields{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px}
+  .grp{grid-column:1/-1;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+       color:var(--ink-soft);border-bottom:1px solid var(--rule);padding-bottom:5px;margin-top:6px}
+  .f{display:flex;flex-direction:column;gap:4px}
+  .f label{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+  input{font-size:13px;letter-spacing:0;text-transform:none;padding:6px 8px;border:1px solid var(--rule);
+        background:var(--panel);color:var(--ink);width:100%}
+  input.bad{border-color:var(--dear);border-width:2px}
+  button{font-size:10px;padding:9px 13px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer}
+  button:hover:not(:disabled){background:var(--paper)}
+  button:disabled{color:var(--ink-soft);border-color:var(--rule);cursor:default}
+  button.on{background:var(--ink);color:var(--panel)}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .foot{font-family:var(--mono);font-size:11px;color:var(--ink-soft);line-height:1.7;
+        border-top:1px solid var(--rule);padding-top:14px;max-width:84ch}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #small{display:none;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  @media (max-width:1023px){#app{display:none}#small{display:block}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="small">Desktop only. Open at 1024px or wider.</div>
+<div class="wrap" id="app">
+  <div class="eyebrow">AI in design &amp; development · two runs · v1</div>
+  <h1>One brief. Two processes. Your two decisions.</h1>
+  <p class="lede">The conventional run is fixed above as a reference. You advance the assisted run one stage at a time
+    and make two choices along the way. Every figure below is computed from the assumed inputs in the panel at the
+    bottom, all of which you can edit. Nothing here is measured, and the assisted run is free to come out worse.</p>
+
+  <section aria-labelledby="h-lanes">
+    <h2 id="h-lanes">Two lanes · width is assumed effort</h2>
+    <div id="lanes"></div>
+  </section>
+
+  <section aria-labelledby="h-stage">
+    <h2 id="h-stage">Current stage</h2>
+    <div id="stage"></div>
+  </section>
+
+  <section aria-labelledby="h-tally">
+    <h2 id="h-tally">Running tally · all figures assumed</h2>
+    <div class="tally" id="tally"></div>
+    <p class="note" id="tallynote"></p>
+  </section>
+
+  <section id="recordwrap" aria-labelledby="h-record" hidden>
+    <h2 id="h-record">Stage 9 · the run record</h2>
+    <div id="record"></div>
+  </section>
+
+  <section aria-labelledby="h-ass">
+    <h2 id="h-ass">Assumptions · every number the model uses, all assumed, all editable</h2>
+    <div id="ordering"></div>
+    <div class="fields" id="fields"></div>
+    <div class="controls">
+      <button type="button" data-act="resetass">Reset assumptions</button>
+      <span class="sub">Editing an assumption recomputes every figure. It does not change the stage you are on
+        or either choice.</span>
+    </div>
+  </section>
+
+  <p class="foot" id="limits"></p>
+</div>
+<div class="sr" id="live" aria-live="polite"></div>
+<script>
+"use strict";
+/* ---------- model data (SPEC-machine.md) ---------- */
+const ASSISTED_STAGES=[
+  {n:0,key:'value',name:'Value hypothesis',kind:'discover',effort:2},
+  {n:1,key:'scope',name:'Scope',kind:'discover',effort:2},
+  {n:2,key:'research',name:'Research',kind:'discover',effort:5},
+  {n:3,key:'probe',name:'Concept & probe',kind:'concept',effort:8},
+  {n:4,key:'decide',name:'Decide',kind:'concept',effort:1},
+  {n:5,key:'spec',name:'Specify',kind:'spec',effort:5},
+  {n:6,key:'build',name:'Build',kind:'build',effort:9},
+  {n:7,key:'test',name:'Test',kind:'test',effort:4},
+  {n:8,key:'release',name:'Release & measure',kind:'release',effort:3},
+  {n:9,key:'record',name:'Record',kind:'record',effort:0.5}];
+const CONVENTIONAL_PHASES=[
+  {n:1,name:'Discovery',kind:'discover',effort:7},
+  {n:2,name:'Concept',kind:'concept',effort:10},
+  {n:3,name:'Design to spec',kind:'spec',effort:5},
+  {n:4,name:'Handoff',kind:'handoff',effort:2},
+  {n:5,name:'Build',kind:'build',effort:15},
+  {n:6,name:'QA phase',kind:'test',effort:7},
+  {n:7,name:'Release',kind:'release',effort:5},
+  {n:8,name:'Retrospective',kind:'record',effort:0.2}];
+const DEFECTS=[
+  {id:'D1',label:'Subscription contract mismatch',introducedAt:5,
+   caughtAt:{triad:5,human:6,thin:7},conventionalCaughtAt:5},
+  {id:'D2',label:'Invented plan status enum',introducedAt:6,
+   caughtAt:{triad:6,human:6,thin:8},conventionalCaughtAt:null},
+  {id:'D3',label:'Timezone at billing period boundary',introducedAt:6,
+   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:8},
+  {id:'D4',label:'Promo lock-in state missing',introducedAt:3,
+   caughtAt:{triad:3,human:6,thin:7},conventionalCaughtAt:6},
+  {id:'D5',label:'Collections state missing',introducedAt:3,
+   caughtAt:{triad:3,human:6,thin:8},conventionalCaughtAt:8},
+  {id:'D6',label:'Cancellation effective date ambiguous',introducedAt:4,
+   caughtAt:{triad:5,human:7,thin:8},conventionalCaughtAt:8},
+  {id:'D7',label:'Focus management on interrupt',introducedAt:6,
+   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:8},
+  {id:'D8',label:'Copy fails legal tone review',introducedAt:5,
+   caughtAt:{triad:5,human:7,thin:7},conventionalCaughtAt:7},
+  {id:'D9',label:'Prototype fidelity debt shipped',introducedAt:3,
+   caughtAt:{triad:8,human:8,thin:8},conventionalCaughtAt:null,requires:'probesKept'}];
+const DEFAULT_ASSUMPTIONS={
+  specMultipliers:{thin:{build:1.6,test:1.4,reviewRate:1.8},
+                   human:{build:1.25,test:1.15,reviewRate:1.3},
+                   triad:{build:1.0,test:1.0,reviewRate:1.0}},
+  specEffort:{thin:1.5,human:3,triad:5},
+  defectBaseCost:0.4,
+  catchCostMultiplier:{3:1,4:1,5:2,6:5,7:10,8:25},
+  reworkLoopCost:2.5,
+  reviewHoursPerBuildDay:1.2,
+  calendarFromEffort:0.62};
+/* stage numbers named from the stage table, so the model holds no bare indices */
+const SPEC_STAGE=ASSISTED_STAGES.find(s=>s.kind==='spec').n,
+      BUILD_STAGE=ASSISTED_STAGES.find(s=>s.kind==='build').n,
+      PROD_STAGE=ASSISTED_STAGES.find(s=>s.kind==='release').n,
+      DECIDE_STAGE=ASSISTED_STAGES.find(s=>s.key==='decide').n,
+      LAST_STAGE=ASSISTED_STAGES[ASSISTED_STAGES.length-1].n;
+const KIND={discover:['#7C8798','lt'],concept:['#5C6270','dk'],spec:['var(--dear)','dk'],
+  handoff:['#B08A3E','lt'],build:['var(--cheap)','dk'],test:['#4A6FB5','dk'],
+  release:['#9AA3B0','lt'],record:['#14161A','dk']};
+const NO_CONVENTIONAL={
+  D2:'Does not occur in the conventional run: a generated-output failure mode with no human equivalent. A point in the conventional method’s favour.',
+  D9:'Does not occur in the conventional run: it requires a high-fidelity probe, which that process does not produce.'};
+/* stage copy reused from reference/ai-process-spine.html and the worked example */
+const COPY={
+ value:['PM decides. No delegation.','What problem, for whom, why now. Why AI at all rather than the conventional route. What it costs.','One page: hypothesis, target, guard metrics, budget, kill criteria.'],
+ scope:['PM with tech lead and service designer.','Problem definition, user and business need, explicit non-goals.','Scope note with an explicit non-goals section.'],
+ research:['Designers own it; AI compresses the reading.','Desk research, domain study, synthesis of existing material. AI compresses reading; it does not supply evidence.','Theme set with counts, current-state service map, list of what is not known.'],
+ probe:['Product designer, content designer, QA joins early.','Prompt-to-prototype, flows and states, edge-case sweeps, heuristic passes. Cheap artifacts to argue with, then real users.','Chosen direction, surviving scenarios, session findings, open legal questions.'],
+ decide:['PM decides. Tech lead, legal, service designer consulted.','Continue, pivot, or drop. Written down, with the reason. This is the gate AI cannot stand in.','Decision record: what, why, what was rejected, who was in the room.'],
+ spec:['PM owns coherence. Designers own 5.1, PM and tech lead own 5.2, QA owns 5.3.','One decision, written three ways for three audiences: the team, the model, the check. Same content, different reader.','Spec documents in the repo, in version control, reviewed together in one sitting.'],
+ build:['Frontend and backend devs orchestrate; tech lead reviews on booked time.','Agents against the machine-readable spec, inside repo conventions. Scaffolding, glue, mechanical change, variants at volume.','Feature behind a flag, tests passing, review notes recorded.'],
+ test:['QA owns the definition of correct; automation does the running.','Rule-checkable first: types, lint, unit, accessibility rules. Bug hunting and coverage expansion. Taste and security stay human.','Suite in CI, defects fixed or accepted and documented.'],
+ release:['PM owns the read; analysis is assisted.','A/B tests, monitoring, analytics, feedback clustering. Cycle time and rework rate, not perceived speed.','Result against hypothesis, guard metrics, decision to expand or hold.'],
+ record:['Tech lead and PM. The stage everyone skips.','What was delegated, what came back wrong, what the review cost. The only stage that makes the next loop cheaper.','Registry entries with outcomes, including the negative ones.']};
+const LEVELS=[
+ ['thin','Thin annotations','Notes on the designs. No machine-readable contract and no separate test document.'],
+ ['human','Human-readable only','5.1 written: flows, states, copy, accessibility requirements. 5.2 and 5.3 not written.'],
+ ['triad','Full triad','5.1, 5.2 and 5.3 all written and reviewed together in one sitting.']];
+
+/* ---------- state ---------- */
+let state={track:'assisted',stageIndex:0,probesKept:null,specLevel:null,
+           assumptions:clone(DEFAULT_ASSUMPTIONS),assumptionsOpen:true};
+let baseEfforts=captureEfforts();
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function captureEfforts(){return {a:ASSISTED_STAGES.map(s=>s.effort),c:CONVENTIONAL_PHASES.map(s=>s.effort)};}
+function restoreEfforts(){ASSISTED_STAGES.forEach((s,i)=>s.effort=baseEfforts.a[i]);
+                         CONVENTIONAL_PHASES.forEach((s,i)=>s.effort=baseEfforts.c[i]);}
+
+/* ---------- model: pure functions over (stages, defects, assumptions) ---------- */
+function activeDefects(lane,probesKept){
+  return DEFECTS.filter(d=>lane==='conventional' ? d.conventionalCaughtAt!==null
+                                                 : (d.requires==='probesKept' ? probesKept===true : true));
+}
+function run(lane,level,probesKept,stages,a){
+  const known=lane==='conventional'||level!==null;
+  const defs=known?activeDefects(lane,probesKept).map(d=>({d,caught:lane==='conventional'?d.conventionalCaughtAt:d.caughtAt[level]})):[];
+  const rows=stages.map(s=>{
+    let effort=s.effort, determined=true;
+    if(lane==='assisted'&&(s.kind==='spec'||s.kind==='build'||s.kind==='test')){
+      if(!known) determined=false;
+      else if(s.kind==='spec') effort=a.specEffort[level];
+      else if(s.kind==='build') effort=s.effort*a.specMultipliers[level].build;
+      else effort=s.effort*a.specMultipliers[level].test;
+    }
+    const work=determined?effort:0;
+    let review=0;
+    if(s.kind==='build'||s.kind==='test'){
+      review=work*a.reviewHoursPerBuildDay;
+      if(lane==='assisted'&&known) review*=a.specMultipliers[level].reviewRate;
+    }
+    const found=defs.filter(x=>x.caught===s.n);
+    const rework=found.filter(x=>x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE);
+    const dCost=found.reduce((t,x)=>t+a.defectBaseCost*a.catchCostMultiplier[x.caught],0);
+    const rCost=rework.length*a.reworkLoopCost;
+    const escPart=s.n===PROD_STAGE?dCost+rCost:0;
+    return {stage:s,work,determined,found,rework,dCost,rCost,review,escPart,total:work+dCost+rCost};
+  });
+  return {lane,level,known,defs,rows};
+}
+function upTo(r,idx,a){
+  const rows=r.rows.filter(x=>x.stage.n<=idx&&x.determined);
+  const effort=rows.reduce((t,x)=>t+x.total,0);
+  const found=rows.reduce((t,x)=>t.concat(x.found),[]);
+  return {rows,effort,calendarDays:effort*a.calendarFromEffort,
+    reviewHours:rows.reduce((t,x)=>t+x.review,0),
+    loops:rows.reduce((t,x)=>t+x.rework.length,0),
+    found,escaped:found.filter(x=>x.caught===PROD_STAGE)};
+}
+function scaleMax(a){
+  const conv=upTo(run('conventional',null,false,CONVENTIONAL_PHASES,a),Infinity,a).effort;
+  const each=LEVELS.map(l=>upTo(run('assisted',l[0],true,ASSISTED_STAGES,a),Infinity,a).effort);
+  return Math.max(conv,...each);
+}
+function orderingHolds(a){
+  const m=a.specMultipliers, e=a.specEffort;
+  return m.thin.build>=m.human.build&&m.human.build>=m.triad.build
+      && m.thin.test>=m.human.test&&m.human.test>=m.triad.test
+      && m.thin.reviewRate>=m.human.reviewRate&&m.human.reviewRate>=m.triad.reviewRate
+      && e.thin<=e.human&&e.human<=e.triad;
+}
+
+/* ---------- formatting ---------- */
+function f1(x){return (Math.round(x*10)/10).toFixed(1);}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function seg(r,total,max){
+  const[bg,ink]=KIND[r.stage.kind], v=r.total-r.escPart;
+  const share=total?v/total*100:0, ofMax=total?v/max*100:0;
+  return `<div class="seg ${ink}" style="background:${bg};width:${share}%" `+
+    `title="${esc(r.stage.n+' '+r.stage.name)} — ${f1(v)} assumed effort days">`+
+    `<span>${r.stage.n}</span>`+(ofMax>=6?`<span>${esc(r.stage.name)}</span>`:'')+
+    (ofMax>=2.5?`<span>${f1(v)}</span>`:'')+`</div>`;
+}
+/* escaped defects are not a phase of anybody's process, so they are not drawn as one.
+   The conventional phase numbered 8 is Retrospective, not production. */
+function escSeg(escTotal,total,max){
+  if(!escTotal) return '';
+  const share=total?escTotal/total*100:0, ofMax=total?escTotal/max*100:0;
+  return `<div class="seg esc" style="width:${share}%" `+
+    `title="Escaped to production — ${f1(escTotal)} assumed effort days, paid after release">`+
+    (ofMax>=6?`<span>Escaped</span>`:'')+(ofMax>=2.5?`<span>${f1(escTotal)}</span>`:'')+`</div>`;
+}
+function lane(title,rows,max,grey,a,extra){
+  const total=rows.reduce((t,x)=>t+x.total,0), escTotal=rows.reduce((t,x)=>t+x.escPart,0);
+  const w=total?total/max*100:0;
+  return `<div class="lane"><div class="lab">${title} · <b>${f1(total)}</b> assumed effort days`+
+    (extra?` · ${extra}`:'')+`</div><div class="rail"><div class="strip${grey?' grey':''}" `+
+    `style="width:${w}%" role="img" aria-label="${esc(title)}, `+
+    rows.map(r=>r.stage.name+' '+f1(r.total-r.escPart)).join(', ')+
+    (escTotal?`, escaped to production ${f1(escTotal)}`:'')+`">`+
+    rows.map(r=>seg(r,total,max)).join('')+escSeg(escTotal,total,max)+
+    `</div></div>${arrows(rows,total,max,escTotal)}</div>`;
+}
+function arrows(rows,total,max,escTotal){
+  if(!total) return '';
+  const left={},wid={};let cum=0;
+  rows.forEach(r=>{left[r.stage.n]=cum;wid[r.stage.n]=(r.total-r.escPart)/total*100;cum+=wid[r.stage.n];});
+  /* PROD_STAGE is never a rework destination, so the escaped block can claim that key */
+  if(escTotal){left[PROD_STAGE]=cum;wid[PROD_STAGE]=escTotal/total*100;}
+  const items=[];
+  rows.forEach(r=>r.rework.forEach(x=>{
+    if(left[x.d.introducedAt]===undefined) return;
+    const to=left[x.d.introducedAt]+wid[x.d.introducedAt]/2, from=left[x.caught]+wid[x.caught]/2;
+    items.push([to,Math.max(from-to,0),x]);
+  }));
+  if(!items.length) return '';
+  return `<div class="arrows" style="width:${total/max*100}%;height:${items.length*14+4}px">`+
+    items.map(([l,w,x],i)=>`<div class="arrow" style="left:${l}%;width:${w}%;top:${i*14}px" `+
+      `title="Rework loop: ${esc(x.d.label)} caught at stage ${x.caught}, introduced at stage ${x.d.introducedAt}">`+
+      `&larrhk; ${x.d.id} rework to ${x.d.introducedAt}</div>`).join('')+`</div>`;
+}
+
+/* ---------- render ---------- */
+function focusKey(){
+  const e=document.activeElement; if(!e||e===document.body) return null;
+  if(e.id) return '#'+CSS.escape(e.id);
+  if(e.dataset&&e.dataset.act) return `button[data-act="${e.dataset.act}"]`+
+    (e.dataset.val?`[data-val="${e.dataset.val}"]`:'');
+  return null;
+}
+function restoreFocus(key){
+  if(!key) return;
+  let el=document.querySelector(key);
+  if(!el||el.disabled) el=document.querySelector('#stage button:not(:disabled)');
+  if(el&&el!==document.activeElement) el.focus();
+}
+function render(){
+  const key=focusKey();
+  try{ draw(); restoreFocus(key); }
+  catch(err){
+    document.getElementById('lanes').innerHTML='';
+    document.getElementById('tally').innerHTML='';
+    document.getElementById('stage').innerHTML=`<div class="panel"><p><b>The model could not be rendered.</b> `+
+      `Stage ${state.stageIndex}, probes ${state.probesKept===null?'undecided':(state.probesKept?'kept':'deleted')}, `+
+      `spec ${state.specLevel||'unchosen'}. ${esc(err&&err.message||err)}</p></div>`;
+  }
+}
+function draw(){
+  const a=state.assumptions, idx=state.stageIndex;
+  const conv=run('conventional',null,true,CONVENTIONAL_PHASES,a), convAll=upTo(conv,Infinity,a);
+  const asst=run('assisted',state.specLevel,state.probesKept,ASSISTED_STAGES,a);
+  const now=upTo(asst,idx,a), max=scaleMax(a);
+  const pending=asst.rows.filter(x=>x.stage.n<=idx&&!x.determined);
+  document.getElementById('lanes').innerHTML=
+    lane('Conventional run — fixed reference, unaffected by your choices',convAll.rows,max,true,a,
+      `${convAll.loops} rework loop${convAll.loops===1?'':'s'} · ${convAll.escaped.length} escaped`)+
+    lane('Assisted run — stages 0 to '+idx,now.rows,max,false,a,
+      pending.length?`stage ${pending.map(x=>x.stage.n).join(', ')} not yet costed — choice pending`:'');
+  drawStage(asst,now);
+  drawTally(now,convAll,idx);
+  drawRecord(asst,now,convAll,idx);
+  document.getElementById('ordering').innerHTML=orderingHolds(a)?'':
+    `<div class="warn"><b>Multiplier ordering no longer holds.</b> One of your edits puts a thinner spec level at or `+
+    `below a fuller one. The figures below are computed from what you entered and have not been corrected. `+
+    `The ordering-dependent expectations — total effort rising as the spec thins, and the thin path landing near `+
+    `the conventional lane — will not apply.</div>`;
+}
+function drawStage(asst,now){
+  const s=ASSISTED_STAGES[state.stageIndex], [owner,what,out]=COPY[s.key];
+  const row=asst.rows[state.stageIndex];
+  let h=`<div class="panel"><div class="shead"><span class="n">${s.n}</span><h3>${esc(s.name)}</h3>`+
+    `<span class="dur">${row.determined?f1(row.total)+' assumed effort days':'not yet costed'}</span></div>`+
+    `<p class="owner">${esc(owner)}</p><p>${esc(what)}</p>`+
+    `<div class="out"><b>Out</b>${esc(out)}</div>`;
+  if(row.found.length){
+    h+=`<div class="found"><b>Surfaced at this stage</b><ul>`+row.found.map(x=>{
+      const escaped=x.caught===PROD_STAGE;
+      return `<li>${x.d.id} — ${esc(x.d.label)}. Introduced at stage ${x.d.introducedAt}, `+
+        (escaped?`found in production`:`found here`)+
+        `, assumed cost ${f1(state.assumptions.defectBaseCost*state.assumptions.catchCostMultiplier[x.caught])} days`+
+        (x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE?`, plus one rework loop back to stage ${x.d.introducedAt}`:'')+
+        `.${NO_CONVENTIONAL[x.d.id]?' '+esc(NO_CONVENTIONAL[x.d.id]):''}</li>`;
+    }).join('')+`</ul></div>`;
+  }
+  if(state.stageIndex===DECIDE_STAGE) h+=choiceBlock('Three clickable variants exist from stage 3, built from prompts in a day and a half.',[
+    ['probe','keep','Keep the prototype','The variant that looks nearest to finished stays in the repository and the build starts from it.'],
+    ['probe','delete','Delete the probes','All three variants are discarded once the direction is chosen. Nothing from them enters the repository.']],
+    state.probesKept===null?null:(state.probesKept?'keep':'delete'));
+  if(state.stageIndex===SPEC_STAGE) h+=choiceBlock('How completely is the decision written down before stage 6 starts?',
+    LEVELS.map(l=>['spec',l[0],l[1],l[2]]),state.specLevel);
+  const blocked=blockReason();
+  h+=`<div class="controls"><button type="button" data-act="back" ${state.stageIndex===0?'disabled':''}>Back</button>`+
+    `<button type="button" data-act="next" ${blocked||state.stageIndex===LAST_STAGE?'disabled':''}>Next stage</button>`+
+    `<button type="button" data-act="reset">Reset run</button>`+
+    (blocked?`<span class="why">${esc(blocked)}</span>`:'')+`</div></div>`;
+  document.getElementById('stage').innerHTML=h;
+}
+function choiceBlock(prompt,opts,current){
+  return `<p style="margin-top:14px">${esc(prompt)}</p><div class="choices">`+opts.map(([kind,val,label,desc])=>
+    `<div class="choice"><p>${esc(desc)}</p><button type="button" data-act="${kind}" data-val="${val}" `+
+    `class="${current===val?'on':''}" aria-pressed="${current===val}">${esc(label)}</button></div>`).join('')+`</div>`;
+}
+function blockReason(){
+  if(state.stageIndex===DECIDE_STAGE&&state.probesKept===null)
+    return 'Next is blocked: stage 4 is a decision, and it has not been made.';
+  if(state.stageIndex===SPEC_STAGE&&state.specLevel===null)
+    return 'Next is blocked: the spec level has not been chosen, so stages 6 and 7 cannot be costed.';
+  return null;
+}
+function drawTally(now,convAll,idx){
+  const t=[['Effort',f1(now.effort),'assumed person-days'],
+    ['Calendar',f1(now.calendarDays),'assumed days'],
+    ['Review',f1(now.reviewHours),'assumed hours'],
+    ['Defects open',String(now.found.length-now.escaped.length),'surfaced at or before stage '+idx],
+    ['Escaped',String(now.escaped.length),'found in production'],
+    ['Rework loops',String(now.loops),'fired so far']];
+  document.getElementById('tally').innerHTML=t.map(([k,v,s])=>
+    `<div class="tile"><span class="lab">${esc(k)}</span><span class="big">${v}</span>`+
+    `<span class="sub">${esc(s)}</span></div>`).join('');
+  document.getElementById('tallynote').textContent=
+    `Every figure is assumed, not measured. Conventional reference for the whole run: `+
+    `${f1(convAll.effort)} effort days, ${f1(convAll.calendarDays)} calendar days, `+
+    `${f1(convAll.reviewHours)} review hours, ${convAll.escaped.length} escaped, `+
+    `${convAll.loops} rework loop${convAll.loops===1?'':'s'}. `+
+    `Defects introduced earlier than the stage that catches them are not counted until they surface.`;
+}
+function drawRecord(asst,now,convAll,idx){
+  const wrap=document.getElementById('recordwrap');
+  wrap.hidden=idx!==LAST_STAGE;
+  if(wrap.hidden){document.getElementById('record').innerHTML='';return;}
+  const a=state.assumptions;
+  const rows=asst.defs.slice().sort((x,y)=>x.d.id<y.d.id?-1:1).map(x=>{
+    const cost=a.defectBaseCost*a.catchCostMultiplier[x.caught];
+    const rw=x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE;
+    return `<tr><td class="n">${x.d.id}</td><td>${esc(x.d.label)}`+
+      (NO_CONVENTIONAL[x.d.id]?`<div class="note">${esc(NO_CONVENTIONAL[x.d.id])}</div>`:'')+
+      `</td><td class="n">${x.d.introducedAt}</td>`+
+      `<td class="n">${x.caught===PROD_STAGE?'production':x.caught}</td>`+
+      `<td class="n">${f1(cost+(rw?a.reworkLoopCost:0))}${rw?' incl. rework':''}</td></tr>`;
+  }).join('');
+  const delta=(now.effort/convAll.effort-1)*100;
+  document.getElementById('record').innerHTML=
+    `<table><thead><tr><th>Id</th><th>Defect</th><th>Introduced</th><th>Caught</th>`+
+    `<th>Assumed cost, days</th></tr></thead><tbody>${rows}</tbody></table>`+
+    `<p class="note">Path taken: probes ${state.probesKept?'kept':'deleted'}, spec `+
+    `${esc(LEVELS.find(l=>l[0]===state.specLevel)[1].toLowerCase())}. `+
+    `Both paths produce defects; the difference is only where they are caught, and defects the chosen spec `+
+    `level catches cheaply are listed here alongside the expensive ones.</p>`+
+    `<p class="note">Assisted run ${f1(now.effort)} assumed effort days against ${f1(convAll.effort)} `+
+    `for the conventional reference — ${delta>=0?'+':''}${f1(delta)}%. Escaped to production: `+
+    `${now.escaped.length} against ${convAll.escaped.length}. Rework loops: ${now.loops} against ${convAll.loops}. `+
+    `Review hours: ${f1(now.reviewHours)} against ${f1(convAll.reviewHours)}.</p>`+
+    (asst.defs.some(x=>x.caught<SPEC_STAGE)?`<p class="note">Where cheap catches are attributed: the spec level chosen at stage 5 decides `+
+      `how completely stage 3's output was written down, so a defect the triad catches at stage 3 is costed there.</p>`:'');
+}
+
+/* ---------- assumptions panel ---------- */
+const FIELDS=[
+  ['Cost model',null,null],
+  ['assumptions.defectBaseCost','Defect base cost, days',0.1],
+  ['assumptions.reworkLoopCost','Rework loop cost, days',0.5],
+  ['assumptions.reviewHoursPerBuildDay','Review hours per build day',0.1],
+  ['assumptions.calendarFromEffort','Calendar days per effort day',0.01],
+  ['Catch cost multiplier, by stage caught',null,null],
+  ['assumptions.catchCostMultiplier.3','Stage 3',1],['assumptions.catchCostMultiplier.4','Stage 4',1],
+  ['assumptions.catchCostMultiplier.5','Stage 5',1],['assumptions.catchCostMultiplier.6','Stage 6',1],
+  ['assumptions.catchCostMultiplier.7','Stage 7',1],['assumptions.catchCostMultiplier.8','Production',1],
+  ['Spec stage effort, days',null,null],
+  ['assumptions.specEffort.thin','Thin',0.5],['assumptions.specEffort.human','Human-readable',0.5],
+  ['assumptions.specEffort.triad','Triad',0.5],
+  ['Spec level multipliers',null,null],
+  ['assumptions.specMultipliers.thin.build','Thin · build',0.05],
+  ['assumptions.specMultipliers.thin.test','Thin · test',0.05],
+  ['assumptions.specMultipliers.thin.reviewRate','Thin · review rate',0.05],
+  ['assumptions.specMultipliers.human.build','Human · build',0.05],
+  ['assumptions.specMultipliers.human.test','Human · test',0.05],
+  ['assumptions.specMultipliers.human.reviewRate','Human · review rate',0.05],
+  ['assumptions.specMultipliers.triad.build','Triad · build',0.05],
+  ['assumptions.specMultipliers.triad.test','Triad · test',0.05],
+  ['assumptions.specMultipliers.triad.reviewRate','Triad · review rate',0.05]];
+function stageFields(){
+  return [['Assisted stage base effort, days',null,null]]
+    .concat(ASSISTED_STAGES.map((s,i)=>['stage.a.'+i,s.n+' '+s.name,0.5]))
+    .concat([['Conventional phase base effort, days',null,null]])
+    .concat(CONVENTIONAL_PHASES.map((s,i)=>['phase.c.'+i,s.n+' '+s.name,0.5]));
+}
+function getPath(p){
+  const seg=p.split('.');
+  if(seg[0]==='stage') return ASSISTED_STAGES[+seg[2]].effort;
+  if(seg[0]==='phase') return CONVENTIONAL_PHASES[+seg[2]].effort;
+  return seg.slice(1).reduce((o,k)=>o[k],state.assumptions);
+}
+function setPath(p,v){
+  const seg=p.split('.');
+  if(seg[0]==='stage'){ASSISTED_STAGES[+seg[2]].effort=v;return;}
+  if(seg[0]==='phase'){CONVENTIONAL_PHASES[+seg[2]].effort=v;return;}
+  const keys=seg.slice(1);
+  keys.slice(0,-1).reduce((o,k)=>o[k],state.assumptions)[keys[keys.length-1]]=v;
+}
+function buildPanel(){
+  document.getElementById('fields').innerHTML=FIELDS.concat(stageFields()).map(([p,label,step])=>
+    label===null?`<div class="grp">${esc(p)} · assumed</div>`:
+    `<div class="f"><label for="i-${p}">${esc(label)}</label>`+
+    `<input id="i-${p}" type="number" min="0" step="${step}" data-path="${p}" value="${getPath(p)}"></div>`).join('');
+}
+function syncPanel(){
+  document.querySelectorAll('#fields input').forEach(el=>{
+    el.value=getPath(el.dataset.path); el.classList.remove('bad');
+  });
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]'); if(!b) return;
+  const act=b.dataset.act;
+  if(act==='next'&&!blockReason()&&state.stageIndex<LAST_STAGE){
+    state.stageIndex++; announce();
+  } else if(act==='back'&&state.stageIndex>0){ state.stageIndex--; announce(); }
+  else if(act==='reset'){ state.stageIndex=0; state.probesKept=null; state.specLevel=null; announce(); }
+  else if(act==='probe'){ state.probesKept=b.dataset.val==='keep'; }
+  else if(act==='spec'){ state.specLevel=b.dataset.val; }
+  else if(act==='resetass'){ state.assumptions=clone(DEFAULT_ASSUMPTIONS); restoreEfforts(); syncPanel(); }
+  render();
+});
+document.addEventListener('input',e=>{
+  const el=e.target; if(!el.dataset||!el.dataset.path) return;
+  const v=parseFloat(el.value);
+  if(el.value.trim()===''||!isFinite(v)||v<0){ el.classList.add('bad'); return; }
+  el.classList.remove('bad'); setPath(el.dataset.path,v); render();
+});
+function announce(){
+  const s=ASSISTED_STAGES[state.stageIndex];
+  document.getElementById('live').textContent=`Stage ${s.n} of ${LAST_STAGE}, ${s.name}.`;
+}
+document.getElementById('limits').textContent=
+  'Known limitations. Every number here is invented; none of it is observation. The defect table is a '+
+  'reconstruction rather than a record. Both lanes assume existing tests, a design system and a documented '+
+  'domain; without those the assisted lane would be slower, and this model does not represent that case. '+
+  'A simulation of AI benefits, built with AI, argues in a circle — only a recorded run on real work settles it.';
+buildPanel();
+render();
+announce();
+</script>
+</body>
+</html>
