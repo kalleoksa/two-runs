@@ -83,7 +83,9 @@
         background:var(--panel);color:var(--ink);width:100%}
   input.bad{border-color:var(--dear);border-width:2px}
   button{font-size:10px;padding:9px 13px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);cursor:pointer}
-  button:hover:not(:disabled){background:var(--paper)}
+  /* :hover must not outrank .on, or the chosen button loses its fill and keeps its light
+     text. Gated on hover:hover so a tap on a touch device cannot leave a stuck hover state. */
+  @media (hover:hover){button:hover:not(:disabled):not(.on){background:var(--paper)}}
   button:disabled{color:var(--ink-soft);border-color:var(--rule);cursor:default}
   button.on{background:var(--ink);color:var(--panel)}
   :focus-visible{outline:2px solid var(--ink);outline-offset:2px}

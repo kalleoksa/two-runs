@@ -84,14 +84,16 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 `<= 5`). Formatting and layout functions do contain literals — rounding factors, label-width thresholds
 — which C2's wording does not cover.
 
-**D5** — 557 lines including styles after the §8 changes (542 at first pass). Over the ~400 target,
-under the 600 stop line.
+**D5** — 559 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
+
+**E4 was checked in one state only**, which is how §9 got through. See there.
 
 ---
 
 ## 3. Defects in the build, and who caught them
 
-Four. All mine; the human reviewer has not been through it yet.
+Five. Four mine, **one found by the human reviewer** — see §9, which is the first entry in this log that
+is not the builder marking its own homework.
 
 1. **Crash on load: `a.specMultipliers[null].reviewRate`.** The review-hours branch dereferenced the
    spec multipliers for build/test stages before a spec level existed, so the page died at stage 0 —
@@ -336,3 +338,41 @@ No human has opened the file. §6 stands unchanged: E2 is structural only, B4 re
 about copy I wrote, no accessibility rule engine has been run, and the criteria themselves have not been
 reviewed for whether they are the right criteria. A3 now passes because a number was changed on
 instruction, which is a different kind of fact from a criterion that passed on its own.
+
+---
+
+## 9. Found by the human reviewer: the chosen button goes invisible
+
+Reported from a real device — iPad Safari, against the deployed Pages URL — with the observation
+"prototype and probe buttons are not working". They were working. The state change registered every
+time. What broke was the evidence that it had.
+
+**The bug.** `button:hover:not(:disabled){background:var(--paper)}` has specificity (0,2,1).
+`button.on{background:var(--ink);color:var(--panel)}` has (0,1,1). So on hover, the selected button
+keeps `.on`'s near-white text and loses its dark fill, leaving `--panel` text on `--paper`:
+**contrast 1.09**. On a desktop that is a flicker while the pointer rests on the button. On iOS Safari
+the `:hover` state persists after a tap until you tap somewhere else, so the button you just chose stays
+blank — which reads exactly like a dead control.
+
+**Fix.** `@media (hover:hover){button:hover:not(:disabled):not(.on){background:var(--paper)}}`. The
+`:not(.on)` stops hover outranking the selected state; the `hover:hover` gate means a touch device never
+enters the state at all. Verified: 17.03 contrast in all three states (just-clicked, pointer away,
+pointer back over), and a full tap-driven walkthrough at 1024×768 and 1194×834 with touch emulation
+produces the same totals as the mouse run.
+
+**Why my own checks missed it, which is the part worth keeping.** The E4 contrast audit measured every
+rendered text node exactly once, in its resting state, with the pointer parked at the origin. It never
+hovered anything, never clicked-then-measured, and never ran with touch emulation. So a criterion I
+reported as passing — "text contrast meets WCAG AA" — was verified against one state of a control that
+has four. The audit was not wrong about what it measured. It was wrong about what it implied, and I wrote
+it up in §2 as though the two were the same thing.
+
+That is the same shape as §3.2, and it is worth noticing that it happened again after §3.2 was written
+down. Both are cases where the assertion passed, the number was correct, and the thing was broken. The
+difference this time is who found it: a person opened it on the device they actually had, and looked.
+`SPEC-tests.md` has no criterion for interaction states, and neither does E4 as written — a real gap in
+the 5.3 document, not just in my execution of it.
+
+**Also not checked, still**: `:focus-visible` against every background, the `.bad` invalid-input state,
+and `:disabled` contrast. Same class of omission. Not fixed, because I have not measured them, and
+saying they are fine would be repeating the mistake.
