@@ -71,6 +71,8 @@
   td{padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
   td.n{font-family:var(--mono);letter-spacing:.06em;white-space:nowrap}
   .note{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;max-width:82ch}
+  .note b{color:var(--ink);font-weight:600}
+  .legend{max-width:104ch;margin-top:14px}
   .warn{border:1px solid var(--dear);padding:10px 12px;font-size:13.5px;margin:0 0 14px;max-width:82ch}
   .warn b{color:var(--dear)}
   /* assumptions */
@@ -109,6 +111,12 @@
   <section aria-labelledby="h-lanes">
     <h2 id="h-lanes">Two lanes · width is assumed effort</h2>
     <div id="lanes"></div>
+    <p class="note legend"><b>Rework loop</b> — a defect introduced at Specify or earlier that is not
+      found until Build or later reopens the stage it came from. The arrow points back at that stage, and
+      the run is charged the assumed rework loop cost on top of the defect's own cost.<br>
+      <b>Escaped</b> — no stage caught it before release, so it was found in production. Charged at the
+      assumed production multiplier, and drawn as the outlined block at the end of each lane rather than
+      inside a phase, because discovery after release is not a stage of either process.</p>
   </section>
 
   <section aria-labelledby="h-stage">
@@ -436,7 +444,7 @@ function drawTally(now,convAll,idx){
     ['Calendar',f1(now.calendarDays),'assumed days'],
     ['Review',f1(now.reviewHours),'assumed hours'],
     ['Defects open',String(now.found.length-now.escaped.length),'surfaced at or before stage '+idx],
-    ['Escaped',String(now.escaped.length),'found in production'],
+    ['Escaped',String(now.escaped.length),'escaped to production'],
     ['Rework loops',String(now.loops),'fired so far']];
   document.getElementById('tally').innerHTML=t.map(([k,v,s])=>
     `<div class="tile"><span class="lab">${esc(k)}</span><span class="big">${v}</span>`+

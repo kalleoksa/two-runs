@@ -421,3 +421,39 @@ found so far (§9, §10) were invisible to a passing criteria suite and obvious 
 screen for thirty seconds. Neither is in `SPEC-tests.md`, and neither could be. The 5.3 document covers
 the model thoroughly and the rendered picture barely at all — it constrains numbers, not whether the
 drawing of them means anything.
+
+---
+
+## 11. Two terms the artifact never defined
+
+Not a defect, and not in either spec. Added on the owner's instruction after they asked, in consecutive
+rounds, what "rework loops" and "escaped" meant. `CLAUDE.md` lists wanting to add something absent from
+both specs as a stop-and-ask, so it was put to them rather than assumed.
+
+Two questions in a row about load-bearing vocabulary is the useful signal here. Both words carry the
+model's whole argument — the cost of a defect is a function of where it was caught, and those two terms
+name the two ends of that scale — and neither appeared anywhere on the page. A presenter would have had
+to define them aloud every time, which means the artifact was not carrying its own weight. `SPEC-human.md`
+specifies three screen regions and their contents; it never asks whether a first-time reader can decode
+what is in them, and no criterion in `SPEC-tests.md` could have failed here.
+
+Added: a two-line definition under the lanes, and the Escaped tally tile now reads "escaped to production"
+rather than "found in production".
+
+One thing worth noting about writing the copy. Both definitions were first drafted with claims that
+would have gone stale the moment a viewer edited an assumption — "charged at the largest multiplier in
+the table" is true of the defaults and false as soon as someone changes them. Rewritten to name the
+assumption instead of its current value ("the assumed production multiplier", "the assumed rework loop
+cost"). On a screen whose entire premise is that every number is editable, any copy that states a
+magnitude is a latent bug. That constraint is not written down anywhere in the specs either.
+
+Verified: 577 lines, still under the 600 stop line. Full criteria suite re-run with no regressions,
+contrast clean including the new text, "assumed" now appears 21 times on screen.
+
+### §9 and §10 confirmed fixed on a real device
+
+The reviewer sent a screenshot of the deployed page showing the selected choice button holding its dark
+fill on iPad Safari, and the conventional lane's arrows reading "D4 reopens 2 Concept" and landing on the
+Concept block. Both fixes are confirmed by observation rather than by my inference from matching bytes —
+which matters, because the session's egress policy blocks the Pages domain, so every claim I have made
+about the live page has been about the file rather than the page.
