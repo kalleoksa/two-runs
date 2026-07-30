@@ -32,6 +32,7 @@
   .seg{display:flex;align-items:center;justify-content:flex-start;gap:5px;padding:0 5px;overflow:hidden;
        white-space:nowrap;font-size:9.5px;letter-spacing:.06em;min-width:0;border-right:1px solid var(--paper)}
   .seg:last-child{border-right:none}
+  .esc{background:var(--paper);color:var(--dear);box-shadow:inset 0 0 0 1px var(--dear)}
   .lt{color:var(--ink)}
   .dk{color:var(--panel)}
   .arrows{position:relative}
@@ -167,17 +168,17 @@ const DEFECTS=[
   {id:'D2',label:'Invented plan status enum',introducedAt:6,
    caughtAt:{triad:6,human:6,thin:8},conventionalCaughtAt:null},
   {id:'D3',label:'Timezone at billing period boundary',introducedAt:6,
-   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:7},
+   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:8},
   {id:'D4',label:'Promo lock-in state missing',introducedAt:3,
-   caughtAt:{triad:3,human:6,thin:7},conventionalCaughtAt:5},
+   caughtAt:{triad:3,human:6,thin:7},conventionalCaughtAt:6},
   {id:'D5',label:'Collections state missing',introducedAt:3,
-   caughtAt:{triad:3,human:6,thin:8},conventionalCaughtAt:5},
+   caughtAt:{triad:3,human:6,thin:8},conventionalCaughtAt:8},
   {id:'D6',label:'Cancellation effective date ambiguous',introducedAt:4,
-   caughtAt:{triad:5,human:7,thin:8},conventionalCaughtAt:5},
+   caughtAt:{triad:5,human:7,thin:8},conventionalCaughtAt:8},
   {id:'D7',label:'Focus management on interrupt',introducedAt:6,
-   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:6},
+   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:8},
   {id:'D8',label:'Copy fails legal tone review',introducedAt:5,
-   caughtAt:{triad:5,human:7,thin:7},conventionalCaughtAt:6},
+   caughtAt:{triad:5,human:7,thin:7},conventionalCaughtAt:7},
   {id:'D9',label:'Prototype fidelity debt shipped',introducedAt:3,
    caughtAt:{triad:8,human:8,thin:8},conventionalCaughtAt:null,requires:'probesKept'}];
 const DEFAULT_ASSUMPTIONS={
@@ -254,7 +255,8 @@ function run(lane,level,probesKept,stages,a){
     const rework=found.filter(x=>x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE);
     const dCost=found.reduce((t,x)=>t+a.defectBaseCost*a.catchCostMultiplier[x.caught],0);
     const rCost=rework.length*a.reworkLoopCost;
-    return {stage:s,work,determined,found,rework,dCost,rCost,review,total:work+dCost+rCost};
+    const escPart=s.n===PROD_STAGE?dCost+rCost:0;
+    return {stage:s,work,determined,found,rework,dCost,rCost,review,escPart,total:work+dCost+rCost};
   });
   return {lane,level,known,defs,rows};
 }
@@ -284,26 +286,39 @@ function orderingHolds(a){
 function f1(x){return (Math.round(x*10)/10).toFixed(1);}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function seg(r,total,max){
-  const[bg,ink]=KIND[r.stage.kind];
-  const share=total?r.total/total*100:0, ofMax=total?r.total/max*100:0;
+  const[bg,ink]=KIND[r.stage.kind], v=r.total-r.escPart;
+  const share=total?v/total*100:0, ofMax=total?v/max*100:0;
   return `<div class="seg ${ink}" style="background:${bg};width:${share}%" `+
-    `title="${esc(r.stage.n+' '+r.stage.name)} — ${f1(r.total)} assumed effort days">`+
+    `title="${esc(r.stage.n+' '+r.stage.name)} — ${f1(v)} assumed effort days">`+
     `<span>${r.stage.n}</span>`+(ofMax>=6?`<span>${esc(r.stage.name)}</span>`:'')+
-    (ofMax>=2.5?`<span>${f1(r.total)}</span>`:'')+`</div>`;
+    (ofMax>=2.5?`<span>${f1(v)}</span>`:'')+`</div>`;
+}
+/* escaped defects are not a phase of anybody's process, so they are not drawn as one.
+   The conventional phase numbered 8 is Retrospective, not production. */
+function escSeg(escTotal,total,max){
+  if(!escTotal) return '';
+  const share=total?escTotal/total*100:0, ofMax=total?escTotal/max*100:0;
+  return `<div class="seg esc" style="width:${share}%" `+
+    `title="Escaped to production — ${f1(escTotal)} assumed effort days, paid after release">`+
+    (ofMax>=6?`<span>Escaped</span>`:'')+(ofMax>=2.5?`<span>${f1(escTotal)}</span>`:'')+`</div>`;
 }
 function lane(title,rows,max,grey,a,extra){
-  const total=rows.reduce((t,x)=>t+x.total,0);
+  const total=rows.reduce((t,x)=>t+x.total,0), escTotal=rows.reduce((t,x)=>t+x.escPart,0);
   const w=total?total/max*100:0;
   return `<div class="lane"><div class="lab">${title} · <b>${f1(total)}</b> assumed effort days`+
     (extra?` · ${extra}`:'')+`</div><div class="rail"><div class="strip${grey?' grey':''}" `+
     `style="width:${w}%" role="img" aria-label="${esc(title)}, `+
-    rows.map(r=>r.stage.name+' '+f1(r.total)).join(', ')+`">`+
-    rows.map(r=>seg(r,total,max)).join('')+`</div></div>${arrows(rows,total,max)}</div>`;
+    rows.map(r=>r.stage.name+' '+f1(r.total-r.escPart)).join(', ')+
+    (escTotal?`, escaped to production ${f1(escTotal)}`:'')+`">`+
+    rows.map(r=>seg(r,total,max)).join('')+escSeg(escTotal,total,max)+
+    `</div></div>${arrows(rows,total,max,escTotal)}</div>`;
 }
-function arrows(rows,total,max){
+function arrows(rows,total,max,escTotal){
   if(!total) return '';
   const left={},wid={};let cum=0;
-  rows.forEach(r=>{left[r.stage.n]=cum;wid[r.stage.n]=r.total/total*100;cum+=wid[r.stage.n];});
+  rows.forEach(r=>{left[r.stage.n]=cum;wid[r.stage.n]=(r.total-r.escPart)/total*100;cum+=wid[r.stage.n];});
+  /* PROD_STAGE is never a rework destination, so the escaped block can claim that key */
+  if(escTotal){left[PROD_STAGE]=cum;wid[PROD_STAGE]=escTotal/total*100;}
   const items=[];
   rows.forEach(r=>r.rework.forEach(x=>{
     if(left[x.d.introducedAt]===undefined) return;

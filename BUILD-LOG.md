@@ -10,6 +10,10 @@ this log is complete only once that number is in it.
 
 ## 1. The result that contradicts a criterion
 
+> **Superseded — see §8.** This section records what the first build found. The model owner has since
+> directed a change to `conventionalCaughtAt`, and A3 now holds. The analysis below is why, and it is
+> the reason the change went where it did.
+
 **A3 fails on the default assumptions, and it is not close.** Reported rather than fixed, per the stop
 condition in `CLAUDE.md`. No number in `DEFAULT_ASSUMPTIONS`, `DEFECTS`, `ASSISTED_STAGES` or
 `CONVENTIONAL_PHASES` was changed.
@@ -80,7 +84,8 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 `<= 5`). Formatting and layout functions do contain literals — rounding factors, label-width thresholds
 — which C2's wording does not cover.
 
-**D5** — 542 lines including styles. Over the ~400 target, under the 600 stop line.
+**D5** — 557 lines including styles after the §8 changes (542 at first pass). Over the ~400 target,
+under the 600 stop line.
 
 ---
 
@@ -176,7 +181,8 @@ adding a fourth path to the model would be adding to something whose central cla
 
 ## 5. Where the specs were ambiguous or wrong
 
-- **A3 is not achievable** from the given tables under either reading of the conventional lane. §1.
+- **A3 is not achievable** from the given tables as originally written, under either reading of the
+  conventional lane. §1, resolved in §8 by changing the defect table on the owner's instruction.
 - **`catchCostMultiplier` is keyed to one lane's stage semantics and applied to both.** §1. This is the
   substantive spec defect found in this build.
 - **"Stage/phase 8 means it escaped to production"** contradicts `CONVENTIONAL_PHASES`, where `n:8` is
@@ -238,3 +244,95 @@ The exercise's own claim is that the spec triad makes downstream work checkable.
   written**, and was. Fifteen minutes of running the model in isolation, ahead of the build, is what
   turned "the demo's central claim does not hold" from a late surprise into a first-day finding. That
   is the stop rule working, and it is the cheapest thing in this log.
+
+---
+
+## 8. A3 resolved by changing the defect table, on instruction
+
+The model owner read §1 and directed the fix: adjust `conventionalCaughtAt`. That is the owner
+exercising the call §1 said was theirs, and it is consistent with A3's own wording — "if it does not
+hold, the model is wrong, not the criterion." The defect table is part of the model. Recording it here
+rather than quietly amending §1, because the reason a number changed matters more than its value.
+
+**The concern I raised before making the change, restated so it is on the record.** A3 can only be
+satisfied by making the conventional lane more expensive, since the thin path's cost is driven by
+`caughtAt`, which was not in scope. That direction flatters the assisted track: the triad's margin over
+the conventional lane widens from 18.8% to 51.2%. `SPEC-machine.md` forbids tuning numbers "so the triad
+path wins by more than the assumptions produce", so satisfying A3 necessarily loosens that constraint.
+The two rules are in direct tension in this model and cannot both be fully honoured. The owner was told
+this and confirmed. Anyone presenting the artifact should know the triad's margin is now a consequence of
+a criterion, not an independent finding.
+
+**What changed, and why each value moved.** Values were derived from a stated rationale about the
+conventional process and then checked against A3 — not searched for until A3 passed. The rationale is
+that the conventional lane is bad at precisely what 5.2 and 5.3 exist to catch (contract, state
+enumeration, boundaries, accessibility rules) and fine at what a developer hits head-on.
+
+| Defect | Was | Now | Reason |
+|---|---|---|---|
+| D1 Subscription contract mismatch | 5 | **5** | Unchanged. A developer writing against the real API hits this immediately; a cheap Build-phase catch is right. |
+| D4 Promo lock-in state missing | 5 | **6** | A missing state is invisible while building the happy path. A QA pass with a promo test account finds it. |
+| D5 Collections state missing | 5 | **8** | Accounts in collections are rare enough that no conventional QA script covers them. The worked example's own argument is that the conventional process has no mechanism for enumerating these states. |
+| D6 Cancellation effective date ambiguous | 5 | **8** | An ambiguity in the decision record survives handoff: the developer picks a reading, QA tests that reading, and the mismatch only appears when customers disagree. |
+| D3 Timezone at billing period boundary | 7 | **8** | Boundary arithmetic with no test document enumerating the boundaries. |
+| D7 Focus management on interrupt | 6 | **8** | No automated accessibility rules in that lane, and manual QA rarely drives the keyboard path. |
+| D8 Copy fails legal tone review | 6 | **7** | Legal sees final copy at release sign-off, not during QA. |
+
+D2 and D9 remain `null`, so A8 is unaffected. `ASSISTED_STAGES`, `CONVENTIONAL_PHASES`, `caughtAt` and
+every assumption are untouched, so the assisted lane's totals are bit-identical to the first build.
+
+**Arithmetic, so it can be checked without running anything.** Conventional base work 51.2, plus
+D1 0.8, D3 10.0, D4 2.0 + 2.5 rework, D5 10.0 + 2.5, D6 10.0 + 2.5, D7 10.0, D8 4.0 + 2.5 — defect cost
+46.8 and rework 10.0, total **108.0**. Thin path 117.5, so **+8.80%**, inside A3's 10%.
+
+**Where A3 still does not hold, stated plainly.** A3 does not say whether "the thin path" means probes
+deleted or includes D9. It holds for the thin path proper (117.5 vs 108.0, +8.8%). With probes kept it
+does not: 130.0 vs 108.0, **+20.4%**. Satisfying both readings would need the conventional lane at about
+121.7, which requires five of its seven defects escaping to production — a claim about conventional QA I
+am not willing to defend, and fitting values to a criterion is what §1 declined to do. Reading A3 as the
+thin path proper is consistent with A4, which qualifies its own claim with "when probes deleted", and
+with A5 treating D9 as an additive cost of the probe choice. Flagged rather than resolved.
+
+**One thing the change improves.** The keying mismatch in §1 has not been fixed — the new values work
+around it. But A3 now holds under *both* readings of the conventional lane: 108.0 as implemented
+(+8.8%), and 119.7 under the kind-mapped reading (−1.8%). The criterion is no longer sensitive to that
+ambiguity, which it was before.
+
+### Display change forced by the change above
+
+Four conventional defects now escape to production, and `conventionalCaughtAt: 8` collides with
+`CONVENTIONAL_PHASES` `n:8`, which is Retrospective — the contradiction flagged in §5, which was moot
+while nothing was caught at 8 and is no longer. Left alone, 47.5 days of production cost renders inside a
+block labelled "Retrospective", implying the conventional process spends 44% of its effort on
+retrospectives.
+
+Escaped cost is now drawn as its own trailing block in **both** lanes, outlined in `--dear` on `--paper`
+rather than filled, because escaped defects are not a phase of anybody's process and should not look
+like one. Totals, the tally and the stage 9 record are unchanged — only the bucket a segment is drawn in
+moved. Rework arrows that originate in production start from that block, which is correct in both lanes.
+`PROD_STAGE` is never a rework destination, so the block can safely claim that key in the position map.
+
+An alternative was available and rejected: leave the cost in the phase numbered 8 and relabel it. That
+keeps the code smaller and the picture wrong.
+
+### Out of spec, added on request: GitHub Pages
+
+`.github/workflows/pages.yml` publishes the demo on push to `main`. Neither spec mentions deployment;
+this is here because it was asked for, and it is noted rather than folded in silently.
+
+The workflow copies `demo.html` to the site root as `index.html` at build time, so `demo.html` stays the
+single source and the repository carries no duplicate to drift. Verified by serving the file over HTTP
+and walking a full path: identical tally to the `file://` run, zero off-origin requests, record table
+intact. D1 is unaffected — the file still opens from the filesystem with no server.
+
+Two one-time steps remain that cannot be done from here: set Pages source to "GitHub Actions" in
+repository settings, and get `main` to be the branch that matters (the first push to the empty repository
+made `claude/repo-setup-xx384z` the default). No test-running workflow was added, because `CLAUDE.md`
+says `SPEC-tests.md` is checked by hand and by inspection.
+
+### Still true after all of this
+
+No human has opened the file. §6 stands unchanged: E2 is structural only, B4 rests on my own assertion
+about copy I wrote, no accessibility rule engine has been run, and the criteria themselves have not been
+reviewed for whether they are the right criteria. A3 now passes because a number was changed on
+instruction, which is a different kind of fact from a criterion that passed on its own.
