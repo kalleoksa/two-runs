@@ -10,7 +10,8 @@ Build `demo.html`: a single-file, deterministic, client-side simulation comparin
 - Vanilla JS. One state object, one `render()`, pure functions for the model.
 - No `localStorage`, `sessionStorage`, or any browser storage API.
 - No `<form>` elements. Event handlers only.
-- Target ~400 lines. If it exceeds 600, the model has grown beyond the spec — stop and ask.
+- Target ~400 lines. If it exceeds 700, stop and ask. The cap is against scope creep in the model, not
+  against presentation the artifact needs; raised from 600 for that reason.
 - Deterministic: identical inputs produce identical outputs on every run.
 
 ## Design tokens — use exactly these
@@ -74,27 +75,32 @@ Defects. `caughtAt` maps spec level to the assisted stage where the defect becom
 ```js
 const DEFECTS = [
   { id:'D1', label:'Subscription contract mismatch',    introducedAt:5,
-    caughtAt:{ triad:5, human:6, thin:7 }, conventionalCaughtAt:5 },
+    caughtAt:{ triad:5, human:6, thin:7 }, conventionalCaughtAt: 5, conventionalIntroducedAt:3 },
   { id:'D2', label:'Invented plan status enum',          introducedAt:6,
     caughtAt:{ triad:6, human:6, thin:8 }, conventionalCaughtAt:null },
   { id:'D3', label:'Timezone at billing period boundary',introducedAt:6,
-    caughtAt:{ triad:7, human:7, thin:8 }, conventionalCaughtAt:7 },
+    caughtAt:{ triad:7, human:7, thin:8 }, conventionalCaughtAt: 7, conventionalIntroducedAt:5 },
   { id:'D4', label:'Promo lock-in state missing',        introducedAt:3,
-    caughtAt:{ triad:3, human:6, thin:7 }, conventionalCaughtAt:5 },
+    caughtAt:{ triad:3, human:6, thin:7 }, conventionalCaughtAt: 6, conventionalIntroducedAt:2 },
   { id:'D5', label:'Collections state missing',          introducedAt:3,
-    caughtAt:{ triad:3, human:6, thin:8 }, conventionalCaughtAt:5 },
+    caughtAt:{ triad:3, human:6, thin:8 }, conventionalCaughtAt: 8, conventionalIntroducedAt:2 },
   { id:'D6', label:'Cancellation effective date ambiguous', introducedAt:4,
-    caughtAt:{ triad:5, human:7, thin:8 }, conventionalCaughtAt:5 },
+    caughtAt:{ triad:5, human:7, thin:8 }, conventionalCaughtAt: 7, conventionalIntroducedAt:2 },
   { id:'D7', label:'Focus management on interrupt',      introducedAt:6,
-    caughtAt:{ triad:7, human:7, thin:8 }, conventionalCaughtAt:6 },
+    caughtAt:{ triad:7, human:7, thin:8 }, conventionalCaughtAt: 8, conventionalIntroducedAt:5 },
   { id:'D8', label:'Copy fails legal tone review',       introducedAt:5,
-    caughtAt:{ triad:5, human:7, thin:7 }, conventionalCaughtAt:6 },
+    caughtAt:{ triad:5, human:7, thin:7 }, conventionalCaughtAt: 7, conventionalIntroducedAt:3 },
   // conditional: only present when probesKept === true
   { id:'D9', label:'Prototype fidelity debt shipped',    introducedAt:3,
     caughtAt:{ triad:8, human:8, thin:8 }, conventionalCaughtAt:null,
     requires:'probesKept' }
 ];
 ```
+
+`conventionalIntroducedAt` is the conventional phase a defect originates in, added because
+`introducedAt` is written in assisted-stage numbers and the two lists number different things — without
+it a rework arrow in the control lane points at a phase chosen by an unrelated index. It is used for the
+arrow destination only; the rework predicate keeps using the shared `introducedAt`.
 
 `conventionalCaughtAt: null` means the defect does not occur in the conventional run at all — D2 is a generated-output failure mode with no human equivalent, D9 requires a high-fidelity probe. State this in the UI where those defects appear; it is a point in the conventional method's favour and must not be hidden.
 

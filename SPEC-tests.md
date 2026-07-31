@@ -1,5 +1,11 @@
 # 5.3 — Testable spec
 
+**A3 was deleted.** It asserted that the thin path lands within 10% of the conventional lane — a
+conclusion written as a test. Satisfying it requires the control arm to ship four or five of its seven
+defects, so it could only ever be met by fitting the model to it, which is what happened once and is
+recorded in `BUILD-LOG.md` §8 and §14. Removed by its author rather than demoted, because a test that
+asserts a conclusion is the failure this document set exists to argue against.
+
 Criteria are written as invariants rather than fixed totals, because the assumptions are user-editable and any hardcoded number would be wrong the moment someone changes one. Invariants must hold for the default assumptions and for any assumption set where the multipliers keep their stated ordering.
 
 ---
@@ -10,7 +16,6 @@ Criteria are written as invariants rather than fixed totals, because the assumpt
 |---|---|
 | A1 | Determinism: same `probesKept` + `specLevel` + assumptions produces identical totals across reloads. No `Math.random`, no `Date.now` in any computation path. |
 | A2 | Total effort ordering: `triad < human < thin`. |
-| A3 | The thin path total lands within 10% of the conventional lane total. This is the argument of the whole artifact; if it does not hold, the model is wrong, not the criterion. |
 | A4 | Escaped defect count: `triad === 0`, `human === 0` when probes deleted, `thin > 0`. |
 | A5 | Keeping probes adds exactly one defect (`D9`), escaping to production, on every spec level. |
 | A6 | Rework loops fire only where `caughtStage >= 6 && introducedAt <= 5`. Count is displayed and matches the arrows drawn. |

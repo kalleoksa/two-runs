@@ -81,6 +81,10 @@
   .warn{border:1px solid var(--dear);padding:10px 12px;font-size:13.5px;margin:0 0 14px;max-width:82ch}
   .warn b{color:var(--dear)}
   /* assumptions */
+  .dials{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:12px;
+         border-top:1px solid var(--rule);padding-top:12px}
+  .dials .f{max-width:230px}
+  .dials .hint{font-size:12.5px;color:var(--ink-soft);max-width:46ch}
   .fields{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px}
   .grp{grid-column:1/-1;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
        color:var(--ink-soft);border-bottom:1px solid var(--rule);padding-bottom:5px;margin-top:6px}
@@ -134,9 +138,7 @@
       the run is charged the assumed rework loop cost on top of the defect's own cost.<br>
       <b>Escaped</b> — no stage caught it before release, so it was found in production. Charged at the
       assumed production multiplier, and drawn as the outlined block at the end of each lane rather than
-      inside a phase, because discovery after release is not a stage of either process.<br>
-      Rework arrows are drawn for the assisted run only. The conventional lane counts its loops, but the
-      specs do not state where its defects are introduced, so no destination is drawn for them.</p>
+      inside a phase, because discovery after release is not a stage of either process.</p>
   </section>
 
   <section aria-labelledby="h-stage">
@@ -148,6 +150,7 @@
     <h2 id="h-tally">Running tally · all figures assumed</h2>
     <div class="tally" id="tally"></div>
     <p class="note" id="tallynote"></p>
+    <div class="dials" id="dials"></div>
   </section>
 
   <section id="recordwrap" aria-labelledby="h-record" hidden>
@@ -194,21 +197,21 @@ const CONVENTIONAL_PHASES=[
   {n:8,name:'Retrospective',kind:'record',effort:0.2}];
 const DEFECTS=[
   {id:'D1',label:'Subscription contract mismatch',introducedAt:5,
-   caughtAt:{triad:5,human:6,thin:7},conventionalCaughtAt:5},
+   caughtAt:{triad:5,human:6,thin:7},conventionalCaughtAt:5,conventionalIntroducedAt:3},
   {id:'D2',label:'Invented plan status enum',introducedAt:6,
    caughtAt:{triad:6,human:6,thin:8},conventionalCaughtAt:null},
   {id:'D3',label:'Timezone at billing period boundary',introducedAt:6,
-   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:7},
+   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:7,conventionalIntroducedAt:5},
   {id:'D4',label:'Promo lock-in state missing',introducedAt:3,
-   caughtAt:{triad:3,human:6,thin:7},conventionalCaughtAt:5},
+   caughtAt:{triad:3,human:6,thin:7},conventionalCaughtAt:6,conventionalIntroducedAt:2},
   {id:'D5',label:'Collections state missing',introducedAt:3,
-   caughtAt:{triad:3,human:6,thin:8},conventionalCaughtAt:5},
+   caughtAt:{triad:3,human:6,thin:8},conventionalCaughtAt:8,conventionalIntroducedAt:2},
   {id:'D6',label:'Cancellation effective date ambiguous',introducedAt:4,
-   caughtAt:{triad:5,human:7,thin:8},conventionalCaughtAt:5},
+   caughtAt:{triad:5,human:7,thin:8},conventionalCaughtAt:7,conventionalIntroducedAt:2},
   {id:'D7',label:'Focus management on interrupt',introducedAt:6,
-   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:6},
+   caughtAt:{triad:7,human:7,thin:8},conventionalCaughtAt:8,conventionalIntroducedAt:5},
   {id:'D8',label:'Copy fails legal tone review',introducedAt:5,
-   caughtAt:{triad:5,human:7,thin:7},conventionalCaughtAt:6},
+   caughtAt:{triad:5,human:7,thin:7},conventionalCaughtAt:7,conventionalIntroducedAt:3},
   {id:'D9',label:'Prototype fidelity debt shipped',introducedAt:3,
    caughtAt:{triad:8,human:8,thin:8},conventionalCaughtAt:null,requires:'probesKept'}];
 const DEFAULT_ASSUMPTIONS={
@@ -307,7 +310,7 @@ function scaleMax(a){
 function introducedIn(d,lane){
   const src=ASSISTED_STAGES.find(s=>s.n===d.introducedAt);
   if(lane==='assisted') return src;
-  return CONVENTIONAL_PHASES.find(p=>p.kind===src.kind);
+  return CONVENTIONAL_PHASES.find(p=>p.n===d.conventionalIntroducedAt);
 }
 function orderingHolds(a){
   const m=a.specMultipliers, e=a.specEffort;
@@ -349,7 +352,7 @@ function lane(title,rows,max,grey,laneKind,extra){
     `</div></div>${arrows(rows,total,max,escTotal,laneKind)}</div>`;
 }
 function arrows(rows,total,max,escTotal,laneKind){
-  if(!total||laneKind==='conventional') return '';
+  if(!total) return '';
   const left={},wid={};let cum=0;
   rows.forEach(r=>{left[r.stage.n]=cum;wid[r.stage.n]=(r.total-r.escPart)/total*100;cum+=wid[r.stage.n];});
   /* PROD_STAGE is never a rework destination, so the escaped block can claim that key */
@@ -461,7 +464,7 @@ function blockReason(){
   return null;
 }
 function drawTally(now,convAll,idx){
-  const t=[['Effort',f1(now.effort),'assumed person-days'],
+  const t=[['Effort',f1(now.effort),'assumed person-days · conventional '+f1(convAll.effort)],
     ['Calendar',f1(now.calendarDays),'assumed days'],
     ['Review',f1(now.reviewHours),'assumed hours'],
     ['Defects surfaced',String(now.found.length-now.escaped.length),'found and resolved by stage '+idx],
@@ -491,7 +494,6 @@ function drawRecord(asst,now,convAll,idx){
       `<td class="n">${x.caught===PROD_STAGE?'production':x.caught}</td>`+
       `<td class="n">${f1(cost+(rw?a.reworkLoopCost:0))}${rw?' incl. rework':''}</td></tr>`;
   }).join('');
-  const delta=(now.effort/convAll.effort-1)*100;
   document.getElementById('record').innerHTML=
     `<table><thead><tr><th>Id</th><th>Defect</th><th>Introduced</th><th>Caught</th>`+
     `<th>Assumed cost, days</th></tr></thead><tbody>${rows}</tbody></table>`+
@@ -499,8 +501,9 @@ function drawRecord(asst,now,convAll,idx){
     `${esc(LEVELS.find(l=>l[0]===state.specLevel)[1].toLowerCase())}. `+
     `Both paths produce defects; the difference is only where they are caught, and defects the chosen spec `+
     `level catches cheaply are listed here alongside the expensive ones.</p>`+
-    `<p class="note">Assisted run ${f1(now.effort)} assumed effort days against ${f1(convAll.effort)} `+
-    `for the conventional reference — ${delta>=0?'+':''}${f1(delta)}%. Escaped to production: `+
+    `<p class="note">Assisted run ${f1(now.effort)} assumed effort days; conventional reference `+
+    `${f1(convAll.effort)}. The difference is deliberately not stated as a percentage: it moves by more `+
+    `than twenty points on the escape count alone. Escaped to production: `+
     `${now.escaped.length} against ${convAll.escaped.length}. Rework loops: ${now.loops} against ${convAll.loops}. `+
     `Review hours: ${f1(now.reviewHours)} against ${f1(convAll.reviewHours)}.</p>`+
     (asst.defs.some(x=>x.caught<SPEC_STAGE)?`<p class="note">Where cheap catches are attributed: the spec level chosen at stage 5 decides `+
@@ -550,14 +553,23 @@ function setPath(p,v){
   const keys=seg.slice(1);
   keys.slice(0,-1).reduce((o,k)=>o[k],state.assumptions)[keys[keys.length-1]]=v;
 }
+const DIALS=[['assumptions.catchCostMultiplier.8','Production multiplier',1],
+             ['assumptions.defectBaseCost','Defect base cost, days',0.1]];
+function field(p,label,step,pre){
+  return `<div class="f"><label for="${pre}-${p}">${esc(label)} · assumed</label>`+
+    `<input id="${pre}-${p}" type="number" lang="en" min="0" step="${step}" data-path="${p}" value="${getPath(p)}"></div>`;
+}
 function buildPanel(){
+  document.getElementById('dials').innerHTML=DIALS.map(([p,l,st])=>field(p,l,st,'d')).join('')+
+    `<p class="hint">These two set the price of an escaped defect, which is the largest single lever on `+
+    `every figure above. Both are assumed.</p>`;
   document.getElementById('fields').innerHTML=FIELDS.concat(stageFields()).map(([p,label,step])=>
     label===null?`<div class="grp">${esc(p)} · assumed</div>`:
     `<div class="f"><label for="i-${p}">${esc(label)}</label>`+
     `<input id="i-${p}" type="number" lang="en" min="0" step="${step}" data-path="${p}" value="${getPath(p)}"></div>`).join('');
 }
 function syncPanel(){
-  document.querySelectorAll('#fields input').forEach(el=>{
+  document.querySelectorAll('input[data-path]').forEach(el=>{
     el.value=getPath(el.dataset.path); el.classList.remove('bad');
   });
 }
@@ -579,7 +591,9 @@ document.addEventListener('input',e=>{
   const el=e.target; if(!el.dataset||!el.dataset.path) return;
   const v=el.valueAsNumber;
   if(el.value.trim()===''||!isFinite(v)||v<0){ el.classList.add('bad'); return; }
-  el.classList.remove('bad'); setPath(el.dataset.path,v); render();
+  el.classList.remove('bad'); setPath(el.dataset.path,v);
+  document.querySelectorAll(`input[data-path="${el.dataset.path}"]`).forEach(o=>{if(o!==el)o.value=v;});
+  render();
 });
 function announce(){
   const s=ASSISTED_STAGES[state.stageIndex];

@@ -27,7 +27,8 @@ Nothing else in the wider document set is an input to this build.
 
 Stop and report rather than continuing, in each of these cases:
 
-- The file passes 600 lines including styles.
+- The file passes 700 lines including styles. (Raised from 600 by the owner: the cap existed to stop
+  scope creep, and was blocking a layout fix rather than doing that job.)
 - The model produces a result that contradicts criteria A2 or A3 in `SPEC-tests.md`. Report the numbers; do not adjust the assumptions to make the criteria pass.
 - Any part of the model requires a number that is not in `DEFAULT_ASSUMPTIONS` or the stage and defect tables.
 - The interaction spec is ambiguous about what a control does.

@@ -84,7 +84,8 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 `<= 5`). Formatting and layout functions do contain literals — rounding factors, label-width thresholds
 — which C2's wording does not cover.
 
-**D5** — 598 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
+**D5** — 612 lines including styles (542 at first pass). Over the ~400 target, under the 700 stop line
+(raised from 600 by the owner; see §15).
 
 **E4 was checked in one state only**, which is how §9 got through. See there.
 
@@ -711,3 +712,116 @@ is not mine to take unprompted.
 this weakens the assumptions panel, which is a scroll away from every figure it drives. Fixing it is a
 layout rewrite, and the file is at **598 lines against a 600 stop condition** — there is no room to
 attempt it. Logged as an open deviation from 5.1 rather than quietly accepted.
+
+---
+
+## 15. Removing the claim rather than defending it
+
+The owner's call, and the best structural decision made about this artifact: **ship with no headline
+percentage.** The rationale is exact — the number was one unmeasured integer times an assumed ×25, and
+§14 measured its range at −18.8% to −51.2%. A figure that volatile is not a result. Both lane totals now
+appear side by side in the tally and the stage 9 record states them without a delta, and the record says
+in as many words that the difference is withheld because it moves more than twenty points on the escape
+count alone.
+
+This also dissolves the cross-document conflict without either document conceding: neither has to assert
+a figure the other must match. And it is consistent with the rest of the set, which refuses multipliers
+everywhere else — the artifact was the one place a headline number had crept back in.
+
+**The two levers are now adjacent to the tally**: production multiplier and defect base cost, editable
+in place, synced with their copies in the assumptions panel. Together they price an escape. Moving the
+multiplier from 25 to 10 takes the thin path from 117.5 to 87.5 in front of the viewer, which is a better
+demonstration of the model's sensitivity than any sentence about it.
+
+### A3 deleted
+
+Removed from `SPEC-tests.md` by its author, with a note in that document explaining why. Their words: *"I
+wrote a test asserting a conclusion. That's the 8X slide in test form, and it's the root cause of the
+whole §8 episode."* Deleted rather than demoted, because demoting it would have left the conclusion in
+the document with a softer label.
+
+Worth stating what this costs: `SPEC-tests.md` no longer contains any criterion about the relationship
+between the two lanes. That is correct — there is no invariant there to assert — but it means nothing in
+the test document now checks the artifact's central comparison. The comparison is an output to be read,
+not a claim to be verified, and the criteria set should be understood that way.
+
+### The line cap was binding on the wrong thing
+
+Raised 600 → 700 in `CLAUDE.md` and `SPEC-machine.md`, with the reason recorded in both: the cap existed
+to stop scope creep in the model, and was instead blocking a presentation fix the artifact needed. Now
+612 lines. The model has not grown; the model is smaller than it was two days ago.
+
+### Reconciliation asked for, and what the documents actually say
+
+The owner asked me to reconcile the reasoned conventional table against "the conventional document"
+before adopting it, citing three specifics. Checked against `reference/`, which contains only
+`ai-process-spine.html` and `ai-worked-example.html` — **there is no conventional-run document in the
+input set.** Both describe the AI-assisted run.
+
+| Claim | What the file says |
+|---|---|
+| A production defect at a billing-period boundary, untested timezone | *"Two failed on timezone handling at billing-period boundaries"* — stage 7 **Test**, fixed. No production defect is named anywhere. |
+| Eleven unconsidered states surfacing during build | No occurrence of "eleven". *"Four unconsidered scenarios surfaced at **concept stage**"*; 40 generated, 34 surviving. |
+| D7 found in QA and accepted as a known limitation | *"Suite in CI, two defects fixed, one accepted and documented."* The category is real. Which defect is never stated. |
+
+Two of the three are not in the documents, and all three describe the assisted lane. Setting
+`conventionalCaughtAt` from them would take evidence about one process and apply it to the other — the
+same category error as §10's arrows, one level up. Declined, and reported instead.
+
+The assisted column already agrees with the worked example without changes: D3 `triad:7` **is** the
+timezone catch in Test, and D5 `triad:3` **is** a state surfacing at concept. On D5 the document argues
+against the proposed revision outright — *"A coded prototype cannot tell you about accounts in
+collections or promo lock-in — you have to already suspect those states to build them"* — which is the
+reason a conventional run ships it.
+
+**Adopted as reasoned in §14**, unreconciled: conventional 96.0, two escapes (D5 collections, D7 focus
+management), four rework loops. Two cells remain disputed and are the owner's to settle — D3, where their
+instinct that a conventional run ships a timezone defect is defensible even though the cited evidence was
+not, and D5, where the document contradicts the proposed change.
+
+### `conventionalIntroducedAt` added
+
+Approved as proposed: D1→3, D3→5, D4→2, D5→2, D6→2, D7→5, D8→3. In `SPEC-machine.md` with a paragraph
+explaining why the field exists. Used for the arrow destination only; the rework predicate keeps the
+shared `introducedAt`, or its thresholds would need a conventional equivalent too. Conventional rework
+arrows are drawn again, now from data rather than from §10's inferred mapping. Totals unchanged, as
+predicted — the values equal what the kind mapping produced, so the only difference is that the claim is
+now explicit and signed off.
+
+### The modelling gap: there is no "found and accepted"
+
+Logged, not built, per instruction. Every defect in the model is either caught-and-fixed or escaped.
+There is no third outcome for *found, priced, and knowingly shipped* — which is the most common real
+disposition for accessibility defects and minor issues, and which the worked example itself records:
+"two defects fixed, one accepted and documented".
+
+Why it matters more than the escape count it was raised alongside: a model with only two outcomes must
+score every discovery as a cost avoided. A process that finds a defect and accepts it pays the finding
+cost and none of the fixing cost, and gets none of the escape penalty either. Absent that category, **any
+simulation flatters whichever process finds things earlier**, because finding is modelled as unambiguously
+good. That bias runs in the assisted lane's favour throughout this artifact, and it is not visible in any
+figure on screen.
+
+Not built: it needs a third disposition on every defect, a cost for accepting, and a decision about
+whether accepted defects count toward "surfaced". That is a model change, at the point where the model
+was supposed to stop growing.
+
+### Reclassified: the most valuable entry in this log
+
+At the owner's direction, and I agree with the reasoning. **§14's `parseFloat("0,4") === 0` finding is
+promoted above §3.2.**
+
+`parseFloat` on a comma-decimal locale entry returns `0` rather than failing. An assumption typed as
+"0,4" would have been silently set to zero — not rejected, not flagged, no `NaN` on screen, C4 reporting
+clean. Every automated check in this build typed periods, so every one of them passed. The bug was
+invisible to the entire test suite because of an unexamined property of the person who wrote the tests.
+
+That is a better instance of the failure class than §3.2. The tally bug was a layout mistake no criterion
+covered. This one **passed a criterion that was specifically written to catch it** — C4 exists to ensure
+invalid input is rejected and no bad value reaches the model, and it reported success while a silent
+zeroing path sat open. Internally consistent, self-verified, wrong, and wrong in a way that quietly
+alters the numbers the whole artifact exists to show.
+
+It was also found in the tooling — by running the thing under three locales — rather than argued about in
+a document. Fixed with `valueAsNumber` and `lang="en"`, verified under en-GB, fi-FI and de-DE. Still
+unverified on iOS Safari, where the reviewer originally saw comma formatting.
