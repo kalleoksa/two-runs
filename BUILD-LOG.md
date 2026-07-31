@@ -84,7 +84,7 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 `<= 5`). Formatting and layout functions do contain literals — rounding factors, label-width thresholds
 — which C2's wording does not cover.
 
-**D5** — 569 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
+**D5** — 596 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
 
 **E4 was checked in one state only**, which is how §9 got through. See there.
 
@@ -538,3 +538,60 @@ and no evidence, exactly like every other number in this file. What changed is n
 true — it became *interesting*, and its shape now matches an argument someone made out loud and can be
 disagreed with. That is a better position than a flat penalty nobody could interrogate, and it is still
 not measurement.
+
+---
+
+## 13. The artifact never said what the project was
+
+Reported by the reviewer: *"we need to have a story of how cancellation flow will be designed and
+developed. This is a bit too abstract to understand without the context."* Checked before answering, and
+they were describing a real hole rather than asking for polish.
+
+`SPEC-machine.md` opens by defining the artifact as a simulation "comparing two delivery processes **on
+one brief**". The brief appeared nowhere on screen. A grep for the project's own subject matter — cancel,
+subscription, refund, churn — returned two hits, and both were incidental, inside defect labels. A viewer
+met "D4 Promo lock-in state missing" with no way to know what product has promos, why cancellation was
+being built, or who was building it. Every number on the page was attached to a project the page never
+named.
+
+Nothing in `SPEC-tests.md` could have caught this. The criteria check that figures are right, that
+controls block correctly, that contrast passes. None of them ask whether the screen means anything to
+someone seeing it for the first time. That is now the third reviewer finding of this shape (§9, §10, §13),
+and the pattern is worth stating: **every defect a criterion caught was mine to make, and every defect
+about whether the thing communicates came from a person looking at it.**
+
+**Fixed by reuse, not by writing.** Both pieces of copy already existed in
+`reference/ai-worked-example.html`, which `CLAUDE.md` names as a source to match rather than redesign:
+
+- A brief box above the lanes — project, why, team, and the "not why" line stating that AI is not the
+  reason for the project. Styling lifted from the reference rather than invented.
+- A fourth field per stage, rendered as "On this brief" between the generic stage description and its
+  output. The generic description says what the stage *is*; the new one says what happened *here* —
+  8,000 tickets clustered and hand-checked at Research, the 40-scenario edge sweep at Concept, the
+  retention-offer decision and its reason at Decide, proration written by hand at Build.
+
+The payoff is that the defect table stops being arbitrary. "Promo lock-in" and "account in collections"
+now appear in the stage 3 narrative as scenarios the sweep produced, so when D4 and D5 surface later the
+viewer has already met them.
+
+### Against the line budget, and close to it
+
+**596 lines. The stop condition is 600.** Four lines of headroom, and this entry exists partly to say
+that out loud: the file is now effectively at its ceiling, and the next content addition of any size
+needs the budget revisited rather than quietly absorbed. `SPEC-machine.md` targets ~400 lines and says
+that past 600 the model has grown beyond the spec — it has not, but the *presentation* has, which is a
+distinction the constraint does not draw.
+
+The cost was kept down by extending the existing `COPY` table with a fourth element rather than adding a
+structure, and by reusing the `.out` block for the narrative instead of styling a new one. One line went
+to `.out+.out{margin-top:8px}` after a screenshot showed the two blocks merging into what read as a
+single box.
+
+Model untouched: all six paths produce identical totals to before, determinism holds, contrast clean,
+2.9ms recompute.
+
+**A test-script error worth recording, since it is the same failure in miniature.** My first screenshot
+script clicked Next five times before making the probe choice, and timed out on a disabled button. The
+app was right and my script was wrong — B1 blocking exactly as specified. I misread it as a fault for a
+moment before reading the log. Third time in this build that I have suspected the artifact before
+suspecting my own check of it.

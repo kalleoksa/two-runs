@@ -24,6 +24,10 @@
   section{margin-bottom:32px}
   .lab{font-size:10px;color:var(--ink-soft);margin-bottom:6px}
   .lab b{color:var(--ink);font-weight:400}
+.brief{background:var(--panel);border:1px solid var(--rule);padding:clamp(14px,2vw,20px);margin-bottom:30px}
+  .brief dl{display:grid;grid-template-columns:auto 1fr;gap:7px 20px;margin:0;font-size:14.5px}
+  .brief dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);padding-top:4px}
+  .brief dd{margin:0}
   /* lanes */
   .lane{margin-bottom:14px}
   .rail{border:1px solid var(--rule);background:var(--panel)}
@@ -48,6 +52,7 @@
   .owner{font-size:13px;color:var(--ink-soft);margin:0 0 10px}
   .panel p{margin:0 0 10px;font-size:14.5px;max-width:78ch}
   .out{font-size:13.5px;padding:9px 11px;background:var(--paper);border-left:2px solid var(--cheap);max-width:78ch}
+  .out+.out{margin-top:8px}
   .out b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
          color:var(--ink-soft);display:block;margin-bottom:3px}
   .found{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--dear);font-size:13.5px;max-width:78ch}
@@ -107,6 +112,19 @@
   <p class="lede">The conventional run is fixed above as a reference. You advance the assisted run one stage at a time
     and make two choices along the way. Every figure below is computed from the assumed inputs in the panel at the
     bottom, all of which you can edit. Nothing here is measured, and the assisted run is free to come out worse.</p>
+
+  <div class="brief">
+    <dl>
+      <dt>Brief</dt><dd>Self-service subscription cancellation for a consumer service (web + app),
+        replacing a phone-and-email-only process.</dd>
+      <dt>Why</dt><dd>Cancellations are roughly a third of contact-centre volume. Regulators in two
+        markets now require a self-service path. Trust cost of the current process is high.</dd>
+      <dt>Team</dt><dd>PM, product designer, service designer (part-time), content designer (part-time),
+        frontend dev, backend dev, QA, tech lead (review only).</dd>
+      <dt>Not why</dt><dd>AI is not the reason for the project. It changes how the work is done, not
+        whether it is worth doing.</dd>
+    </dl>
+  </div>
 
   <section aria-labelledby="h-lanes">
     <h2 id="h-lanes">Two lanes · width is assumed effort</h2>
@@ -215,16 +233,16 @@ const NO_CONVENTIONAL={
   D9:'Does not occur in the conventional run: it requires a high-fidelity probe, which that process does not produce.'};
 /* stage copy reused from reference/ai-process-spine.html and the worked example */
 const COPY={
- value:['PM decides. No delegation.','What problem, for whom, why now. Why AI at all rather than the conventional route. What it costs.','One page: hypothesis, target, guard metrics, budget, kill criteria.'],
- scope:['PM with tech lead and service designer.','Problem definition, user and business need, explicit non-goals.','Scope note with an explicit non-goals section.'],
- research:['Designers own it; AI compresses the reading.','Desk research, domain study, synthesis of existing material. AI compresses reading; it does not supply evidence.','Theme set with counts, current-state service map, list of what is not known.'],
- probe:['Product designer, content designer, QA joins early.','Prompt-to-prototype, flows and states, edge-case sweeps, heuristic passes. Cheap artifacts to argue with, then real users.','Chosen direction, surviving scenarios, session findings, open legal questions.'],
- decide:['PM decides. Tech lead, legal, service designer consulted.','Continue, pivot, or drop. Written down, with the reason. This is the gate AI cannot stand in.','Decision record: what, why, what was rejected, who was in the room.'],
- spec:['PM owns coherence. Designers own 5.1, PM and tech lead own 5.2, QA owns 5.3.','One decision, written three ways for three audiences: the team, the model, the check. Same content, different reader.','Spec documents in the repo, in version control, reviewed together in one sitting.'],
- build:['Frontend and backend devs orchestrate; tech lead reviews on booked time.','Agents against the machine-readable spec, inside repo conventions. Scaffolding, glue, mechanical change, variants at volume.','Feature behind a flag, tests passing, review notes recorded.'],
- test:['QA owns the definition of correct; automation does the running.','Rule-checkable first: types, lint, unit, accessibility rules. Bug hunting and coverage expansion. Taste and security stay human.','Suite in CI, defects fixed or accepted and documented.'],
- release:['PM owns the read; analysis is assisted.','A/B tests, monitoring, analytics, feedback clustering. Cycle time and rework rate, not perceived speed.','Result against hypothesis, guard metrics, decision to expand or hold.'],
- record:['Tech lead and PM. The stage everyone skips.','What was delegated, what came back wrong, what the review cost. The only stage that makes the next loop cheaper.','Registry entries with outcomes, including the negative ones.']};
+ value:['PM decides. No delegation.','What problem, for whom, why now. Why AI at all rather than the conventional route. What it costs.','One page: hypothesis, target, guard metrics, budget, kill criteria.','Deflection target and regulatory deadline written down, with guard metrics named up front: refund complaints, cancel-then-return rate, contact-centre volume for adjacent reasons.'],
+ scope:['PM with tech lead and service designer.','Problem definition, user and business need, explicit non-goals.','Scope note with an explicit non-goals section.','In: monthly self-serve plans. Out: annual, enterprise, partner-billed, family-plan secondary members. The non-goals are explicit, because this is the list agents will otherwise cheerfully build against later.'],
+ research:['Designers own it; AI compresses the reading.','Desk research, domain study, synthesis of existing material. AI compresses reading; it does not supply evidence.','Theme set with counts, current-state service map, list of what is not known.','Around 8,000 support tickets and call summaries clustered into candidate themes in an afternoon, then a hand-coded sample of 100 checked against the clusters. Two clusters were artifacts of phrasing and got merged; one real theme had been split in three.'],
+ probe:['Product designer, content designer, QA joins early.','Prompt-to-prototype, flows and states, edge-case sweeps, heuristic passes. Cheap artifacts to argue with, then real users.','Chosen direction, surviving scenarios, session findings, open legal questions.','Three clickable variants from prompts in a day and a half. An edge-case sweep produces 40 scenarios from the domain model: mid-cycle cancellation, failed last payment, active billing dispute, promo lock-in, account in collections. Six moderated sessions on variant B find five problems the simulated passes did not.'],
+ decide:['PM decides. Tech lead, legal, service designer consulted.','Continue, pivot, or drop. Written down, with the reason. This is the gate AI cannot stand in.','Decision record: what, why, what was rejected, who was in the room.','Variant B proceeds. No retention offer before the cancellation is confirmed, on legal risk in one market and trust cost in both, so the offer moves to the confirmation screen. The reason is recorded, because in four months someone will ask why the funnel has no save step.'],
+ spec:['PM owns coherence. Designers own 5.1, PM and tech lead own 5.2, QA owns 5.3.','One decision, written three ways for three audiences: the team, the model, the check. Same content, different reader.','Spec documents in the repo, in version control, reviewed together in one sitting.','5.1 carries the flows, every state including the ugly ones, and legally reviewed refund and proration wording. 5.2 carries the subscription object as the API actually returns it, plus an explicit list of what must not be touched: the billing adapter, the entitlement service. 5.3 turns the surviving scenarios into test cases.'],
+ build:['Frontend and backend devs orchestrate; tech lead reviews on booked time.','Agents against the machine-readable spec, inside repo conventions. Scaffolding, glue, mechanical change, variants at volume.','Feature behind a flag, tests passing, review notes recorded.','Screens and states scaffolded from tokens and 5.2 in two days, for what was previously a week. Proration and refund arithmetic written by hand and reviewed twice: money is the one place where plausible is not good enough.'],
+ test:['QA owns the definition of correct; automation does the running.','Rule-checkable first: types, lint, unit, accessibility rules. Bug hunting and coverage expansion. Taste and security stay human.','Suite in CI, defects fixed or accepted and documented.','The scenarios run as a suite. Human exploratory testing on the money path and on screen-reader flow, the two places where passing the rules and being right are different things.'],
+ release:['PM owns the read; analysis is assisted.','A/B tests, monitoring, analytics, feedback clustering. Cycle time and rework rate, not perceived speed.','Result against hypothesis, guard metrics, decision to expand or hold.','Ten percent rollout. Deflection tracked against the stage 0 guard metrics rather than on its own, because a cancellation flow can post excellent deflection numbers while quietly generating refund complaints.'],
+ record:['Tech lead and PM. The stage everyone skips.','What was delegated, what came back wrong, what the review cost. The only stage that makes the next loop cheaper.','Registry entries with outcomes, including the negative ones.','Review hours actual against planned. What came back wrong, what moved down the axis and what did not, and the conventions that go back into the repo file so the next project starts cheaper.']};
 const LEVELS=[
  ['thin','Thin annotations','Notes on the designs. No machine-readable contract and no separate test document.'],
  ['human','Human-readable only','5.1 written: flows, states, copy, accessibility requirements. 5.2 and 5.3 not written.'],
@@ -397,11 +415,12 @@ function draw(){
     `the conventional lane — will not apply.</div>`;
 }
 function drawStage(asst,now){
-  const s=ASSISTED_STAGES[state.stageIndex], [owner,what,out]=COPY[s.key];
+  const s=ASSISTED_STAGES[state.stageIndex], [owner,what,out,story]=COPY[s.key];
   const row=asst.rows[state.stageIndex];
   let h=`<div class="panel"><div class="shead"><span class="n">${s.n}</span><h3>${esc(s.name)}</h3>`+
     `<span class="dur">${row.determined?f1(row.total)+' assumed effort days':'not yet costed'}</span></div>`+
     `<p class="owner">${esc(owner)}</p><p>${esc(what)}</p>`+
+    `<div class="out"><b>On this brief</b>${esc(story)}</div>`+
     `<div class="out"><b>Out</b>${esc(out)}</div>`;
   if(row.found.length){
     h+=`<div class="found"><b>Surfaced at this stage</b><ul>`+row.found.map(x=>{
