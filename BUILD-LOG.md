@@ -84,7 +84,7 @@ so the rework rule reads `caught >= BUILD_STAGE && introducedAt <= SPEC_STAGE` r
 `<= 5`). Formatting and layout functions do contain literals — rounding factors, label-width thresholds
 — which C2's wording does not cover.
 
-**D5** — 596 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
+**D5** — 598 lines including styles (542 at first pass). Over the ~400 target, under the 600 stop line.
 
 **E4 was checked in one state only**, which is how §9 got through. See there.
 
@@ -250,6 +250,9 @@ The exercise's own claim is that the spec triad makes downstream work checkable.
 ---
 
 ## 8. A3 resolved by changing the defect table, on instruction
+
+> **Reverted — see §14.** These values shipped and were later reverted to the spec table. The reasoning
+> below stands as the record of why they were chosen; the decision to make them was the prohibited move.
 
 The model owner read §1 and directed the fix: adjust `conventionalCaughtAt`. That is the owner
 exercising the call §1 said was theirs, and it is consistent with A3's own wording — "if it does not
@@ -462,6 +465,10 @@ about the live page has been about the file rather than the page.
 
 ## 12. The first challenge to what the model argues, not to how it looks
 
+> **Reverted — see §14.** `D9` is back to `{triad:8, human:8, thin:8}`. The argument recorded here was
+> accepted and is still, in my view, correct; it was reverted because it breaks A5 and removes the
+> consequence of the stage-4 decision. The conflict is unresolved, not settled.
+
 Everything in §1 through §11 was about execution: wrong arrows, invisible buttons, an unachievable
 criterion. This entry is different. The reviewer challenged a premise, was right, and the model changed.
 
@@ -595,3 +602,112 @@ script clicked Next five times before making the probe choice, and timed out on 
 app was right and my script was wrong — B1 blocking exactly as specified. I misread it as a fault for a
 moment before reading the log. Third time in this build that I have suspected the artifact before
 suspecting my own check of it.
+
+---
+
+## 14. The reviewer filed a bug that was not one, and the log is why it did not get "fixed"
+
+The reviewer reported the conventional lane's 4 escaped defects as a calculation bug — hypothesising that
+`conventionalCaughtAt: null` was being read as "escaped" — and asked for it to be fixed first and written
+up as the most valuable entry in this file, an instance of the D2 failure mode occurring for real.
+
+It was not a bug. Audited before touching anything, because writing up a defect that did not happen
+would itself have been the D2 failure:
+
+- `activeDefects` filters `conventionalCaughtAt !== null` for the conventional lane. D2 and D9 are
+  **absent** from it, not escaped. A8's "does not occur in the conventional run" annotations are intact.
+- Escape is `caught === PROD_STAGE`, and the four escapes were D3, D5, D6 and D7 carrying
+  `conventionalCaughtAt: 8` **in the table** — the §8 amendment, made on the owner's instruction.
+
+The reviewer was reviewing the artifact against the spec table they wrote, without this log. They
+identified the mismatch correctly and diagnosed the mechanism wrongly. On being shown the audit they
+withdrew it and said the audit-before-complying was the right behaviour. Recording that plainly: the
+mitigation that worked here was not a test. It was a written record of a decision and its reason, which
+is the thing stage 9 exists to produce and the thing this whole exercise argues for.
+
+### The substantive question, answered on its merits
+
+The owner asked, separately from the bug report, whether a 50% escape rate is defensible for the
+conventional run — noting their original zero was probably too optimistic, since pre-AI processes shipped
+defects too. Reasoning per defect, without looking at the total:
+
+| Defect | Defensible conventional catch | Why |
+|---|---|---|
+| D1 contract mismatch | 5 Build | A developer writing against the real API hits it immediately. |
+| D3 timezone at boundary | 7 Release | Billing boundaries are standard QA territory for a subscription product. |
+| D4 promo lock-in missing | 6 QA | Invisible while building the happy path; a promo test account finds it. |
+| D5 collections missing | **8 escaped** | No conventional QA script covers accounts in collections unless someone already suspected the state. |
+| D6 effective date ambiguous | 7 Release | Dev picks a reading and QA tests that reading, so it surfaces at sign-off at the earliest. |
+| D7 focus management | **8 escaped** | No automated accessibility rules, and manual QA rarely drives keyboard-only paths. |
+| D8 legal tone | 7 Release | Legal sees final copy at release sign-off. |
+
+**Two escapes out of seven, not four and not zero.** Four (57%) describes a team that ships most of what
+it finds. Zero describes one that catches everything, which the owner has themselves disowned.
+
+### What that does to the headline, which is the real finding
+
+| Conventional lane | Total | Escapes | Headline (triad, probes deleted) | Thin vs conventional | A3 |
+|---|---|---|---|---|---|
+| Spec as written | 64.9 | 0 | −18.8% | +81.0% | fail |
+| **Reasoned per defect** | **96.0** | **2** | **−45.1%** | +22.4% | fail |
+| Reasoned, D6 also ships | 102.0 | 3 | −48.3% | +15.2% | fail |
+| The §8 amendment | 108.0 | 4 | −51.2% | +8.8% | pass |
+
+Two things fall out, and both are more useful than the demo working.
+
+**A3 is unachievable by any defensible control arm.** It requires the conventional total to land between
+106.8 and 130.6. Each escape is worth 10.0–12.5 days against a 51-day baseline, so satisfying A3 takes
+four or five escapes — a control arm that ships most of its known defects. A3 does not merely happen to
+fail; it *demands* a conventional lane nobody would defend. It should be dropped, or demoted from an
+invariant to an observation. The §1 suspicion that A3 asserts something the table cannot produce is now
+arithmetic rather than suspicion.
+
+**The headline is hypersensitive to a number nobody has measured.** −18.8% at zero escapes, −45.1% at
+two. The single largest lever on the demo's top-line claim is how many defects you let the control arm
+ship, multiplied by an assumed ×25. Any presentation of the headline that does not say this out loud is
+overclaiming, and the honest framing of the artifact is that it demonstrates that sensitivity rather than
+a result.
+
+### What shipped, and why
+
+**The spec table, unamended.** Conventional 64.9, zero escapes, A3 failing at +81%, `D9` back to
+`{triad:8, human:8, thin:8}`. `SPEC-machine.md` and `SPEC-tests.md` are restored to their original text.
+Reasons, in order:
+
+1. The §8 amendment was made to make A3 pass. That is the move the `CLAUDE.md` stop condition prohibits
+   by name, whoever authorised it. Reverting is what should have happened at §1.
+2. A3 failing is the finding, and it is a better one than A3 passing ever was.
+3. It agrees with `reference/ai-worked-example.html`, which puts the gain at "about a fifth". The
+   two-escape version does not, and the cross-document conflict the reviewer flagged is real: at −45%
+   the demo and the worked example describe different projects.
+
+**The two-escape table is the recommendation, not the shipped state.** It is more honest about the
+conventional process than either the spec's zero or the amendment's four, and adopting it means moving
+the worked example's headline to match. That is an owner decision with a document change attached, and it
+is not mine to take unprompted.
+
+### Also fixed, from the same review
+
+- **"Defects open" was a mislabel.** They are surfaced and resolved. Now "Defects surfaced", with the
+  sub-label "found and resolved by stage N". Escapes remain a separate tile.
+- **Comma decimals in the assumption inputs.** A real hazard, not just an inconsistency: the handler used
+  `parseFloat`, and `parseFloat("0,4")` is `0`, so a comma-locale entry of "0,4" would have silently set
+  the assumption to zero rather than rejecting it — C4 violated in a way no test in this file caught,
+  because every test typed periods. Now uses `valueAsNumber`, which is locale-correct, and the inputs
+  carry `lang="en"`. Verified under en-GB, fi-FI and de-DE: field shows `0.4`, typed values apply, no
+  `NaN`. Not verified on iOS Safari, where the reviewer saw it — display formatting there is the
+  browser's and may still differ.
+- **Mixed-numbering rework arrows.** The `conventionalIntroducedAt` gap is a genuine omission in
+  `SPEC-machine.md`, acknowledged by its author. Rather than keep the §10 kind-mapping — a guess, however
+  defensible — the conventional lane no longer draws rework destinations at all. It still counts its
+  loops; the legend says why nothing is drawn. Proposed values for the field, for approval, all of which
+  happen to equal what the kind mapping produced, so adopting them changes no totals and only makes the
+  claim explicit: D1→3, D3→5, D4→2, D5→2, D6→2, D7→5, D8→3. The rework *predicate* should keep using the
+  shared `introducedAt`, or the thresholds need a conventional equivalent too.
+
+### Not addressed
+
+**5.1 asked for three regions on one screen; this is a scrolling document.** The reviewer is right that
+this weakens the assumptions panel, which is a scroll away from every figure it drives. Fixing it is a
+layout rewrite, and the file is at **598 lines against a 600 stop condition** — there is no room to
+attempt it. Logged as an open deviation from 5.1 rather than quietly accepted.

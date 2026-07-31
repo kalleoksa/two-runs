@@ -12,7 +12,7 @@ Criteria are written as invariants rather than fixed totals, because the assumpt
 | A2 | Total effort ordering: `triad < human < thin`. |
 | A3 | The thin path total lands within 10% of the conventional lane total. This is the argument of the whole artifact; if it does not hold, the model is wrong, not the criterion. |
 | A4 | Escaped defect count: `triad === 0`, `human === 0` when probes deleted, `thin > 0`. |
-| A5 | Keeping probes adds exactly one defect (`D9`) on every spec level. Where it is caught depends on the spec level chosen — the fuller the spec, the earlier it surfaces — so the two decisions interact rather than sum. `D9` escapes to production on the thin path only. |
+| A5 | Keeping probes adds exactly one defect (`D9`), escaping to production, on every spec level. |
 | A6 | Rework loops fire only where `caughtStage >= 6 && introducedAt <= 5`. Count is displayed and matches the arrows drawn. |
 | A7 | Every defect appears in exactly one place in the stage 9 record, with introduced stage, caught stage, and cost. |
 | A8 | `D2` and `D9` are absent from the conventional lane, and the UI says why where they appear. |

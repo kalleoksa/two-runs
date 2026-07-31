@@ -91,15 +91,10 @@ const DEFECTS = [
     caughtAt:{ triad:5, human:7, thin:7 }, conventionalCaughtAt:6 },
   // conditional: only present when probesKept === true
   { id:'D9', label:'Prototype fidelity debt shipped',    introducedAt:3,
-    caughtAt:{ triad:6, human:7, thin:8 }, conventionalCaughtAt:null,
+    caughtAt:{ triad:8, human:8, thin:8 }, conventionalCaughtAt:null,
     requires:'probesKept' }
 ];
 ```
-
-`D9`'s catch stage varies by spec level because a kept prototype is only as dangerous as the spec is
-thin: against a full triad its undocumented decisions are visible in build review, against 5.1 alone they
-surface in testing, and with thin annotations the prototype *is* the contract, so nothing catches it. The
-two viewer decisions therefore interact rather than sum.
 
 `conventionalCaughtAt: null` means the defect does not occur in the conventional run at all — D2 is a generated-output failure mode with no human equivalent, D9 requires a high-fidelity probe. State this in the UI where those defects appear; it is a point in the conventional method's favour and must not be hidden.
 
