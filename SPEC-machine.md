@@ -10,8 +10,9 @@ Build `demo.html`: a single-file, deterministic, client-side simulation comparin
 - Vanilla JS. One state object, one `render()`, pure functions for the model.
 - No `localStorage`, `sessionStorage`, or any browser storage API.
 - No `<form>` elements. Event handlers only.
-- Target ~400 lines. If it exceeds 700, stop and ask. The cap is against scope creep in the model, not
-  against presentation the artifact needs; raised from 600 for that reason.
+- Target ~400 lines. If it exceeds 800, stop and ask. The cap is against scope creep in the model, not
+  against presentation the artifact needs; raised from 600 to 700, and from 700 to 800, for that reason
+  both times. The model has not grown in either raise.
 - Deterministic: identical inputs produce identical outputs on every run.
 
 ## Design tokens — use exactly these
@@ -149,8 +150,15 @@ Totals must be recomputed from assumptions on every render. No caching, no incre
 | Back | `stageIndex--`. Does not clear choices. |
 | Reset | Full reset including choices; assumptions retained. |
 | Reset assumptions | Restores `DEFAULT_ASSUMPTIONS` only. |
-| Probe choice | Two buttons, neutral labels: `Keep the prototype` / `Delete the probes`. No hint of correctness. |
-| Spec choice | Three buttons: `Thin annotations` / `Human-readable only` / `Full triad`. Described by what gets written, never by outcome. |
+| Probe choice | Two buttons, neutral labels: `Keep the prototype` / `Delete the prototypes`. No hint of correctness. |
+| Spec choice | Three buttons: `Notes on the designs` / `Written up for the team` / `Written for team, tools and tests`. Described by what gets written, never by outcome. |
+
+Button labels are presentation and may be reworded for a reader who has not read this document set; the
+`thin` / `human` / `triad` keys are the contract and do not change with them. The labels above were
+rewritten from `Thin annotations` / `Human-readable only` / `Full triad`, which named the spec triad by
+its internal numbering and meant nothing to a first-time reader. Any replacement must still describe
+what gets written rather than what results, and the three must stay parallel in length and register —
+one option reading longer or heavier than the others is itself a hint of correctness.
 | Assumption inputs | `type="number"`, `step` appropriate to magnitude, immediate recompute on change. Reject negatives and non-numeric; keep last valid value. |
 
 ## Forbidden

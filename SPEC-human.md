@@ -20,7 +20,7 @@ One page, no scrolling between steps. Three regions.
 
 **Middle — the current stage.** Name, what happens, who owns the decision, what it produces. At the two decision points this region becomes the choice instead.
 
-**Bottom — the running tally.** Effort, calendar days, review hours, defects open, defects escaped to production, rework loops. Numbers change as stages complete; changes should be legible rather than animated for effect.
+**Bottom — the running tally.** Effort, calendar days, review hours, defects open, defects escaped to production, rework loops. Numbers change as stages complete; changes should be legible rather than animated for effect. The tiles are labelled for a reader rather than for us — team time, elapsed time, senior review, problems found, reached customers, stages reopened — with the modelling term kept underneath each, so *escaped* and *rework loop* still appear and still mean what the legend says.
 
 ## The walkthrough
 
@@ -45,6 +45,30 @@ Every number is labelled **assumed**. There is no data behind any of them. A vie
 ## Tone
 
 Neutral throughout. No celebration when the triad path performs well, no scolding when the thin path does badly. The record at stage 9 lists what came back wrong regardless of path chosen, because both paths produce defects — the difference is only where they are caught.
+
+## Written to be read without a presenter
+
+The artifact is met as a link, by one person at a time, with nobody standing next to it to explain what a
+word means. It therefore has to carry its own argument, and that has consequences the earlier version of
+this document did not draw:
+
+- **Every load-bearing term is defined on screen.** Not only *escaped* and *rework loop*, which was the
+  §11 fix, but anything a reader outside the team would stumble on: what each of the two processes
+  actually is, what a strip means, what the spec triad is without reference to `5.1` / `5.2` / `5.3`.
+- **Stage descriptions are written for a first-time reader, not lifted from `reference/`.** The reference
+  files remain the source for the visual treatment, the stage names, the ownership lines and what each
+  stage produces. Their *wording* was written for people who had read the whole document set, and reusing
+  it verbatim is what made the demo unreadable to a stakeholder. `CLAUDE.md` is amended to match.
+- **Every defect carries a plain-language consequence** alongside its id and engineering label: one
+  sentence naming who notices and what happens to them. Written in the present tense, because the same
+  sentence has to read correctly whether the problem was caught at its stage or shipped.
+- **The run ends in sentences.** Stage 9 states in plain words what was chosen, what came back, and how
+  the totals compare — before the table, and stated flat in whichever direction the numbers point.
+
+The pull this creates is toward drama, which the tone rule above forbids. Plain is not the same as
+persuasive: the escaped-defect sentences must not be written in a more alarming register than the
+caught-defect ones, and no sentence may state a magnitude, because every magnitude on this page is one
+edit away from being false.
 
 ## Out of scope
 

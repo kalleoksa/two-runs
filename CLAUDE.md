@@ -15,7 +15,13 @@ A single deliverable: `demo.html` in the repo root. A deterministic, client-side
 Reference files, for matching rather than reading closely:
 
 - `reference/ai-worked-example.html` — visual reference for the segment bars, stage blocks, and typographic treatment. Match it; do not redesign it.
-- `reference/ai-process-spine.html` — source for stage names, ownership lines, and the wording of what each stage produces. Reuse this copy rather than writing new stage descriptions.
+- `reference/ai-process-spine.html` — source for stage names, ownership lines, and what each stage produces.
+
+The reference governs the visual treatment, the stage names, and the substance of each stage — not the
+wording of the descriptions. That wording was reused verbatim until the owner reported the artifact read
+as too technical for a stakeholder to follow, and it was the reference copy, written for people who had
+read the whole document set, that made it so. Stage descriptions are now written for a first-time reader.
+Keep every claim the reference makes; do not keep its shorthand.
 
 Nothing else in the wider document set is an input to this build.
 
@@ -27,8 +33,9 @@ Nothing else in the wider document set is an input to this build.
 
 Stop and report rather than continuing, in each of these cases:
 
-- The file passes 700 lines including styles. (Raised from 600 by the owner: the cap existed to stop
-  scope creep, and was blocking a layout fix rather than doing that job.)
+- The file passes 800 lines including styles. (Raised from 600 to 700, then 700 to 800, by the owner: the
+  cap existed to stop scope creep in the model, and was twice blocking presentation the artifact needed
+  rather than doing that job. The model is smaller than it was at 600 lines.)
 - The model produces a result that contradicts criteria A2 or A3 in `SPEC-tests.md`. Report the numbers; do not adjust the assumptions to make the criteria pass.
 - Any part of the model requires a number that is not in `DEFAULT_ASSUMPTIONS` or the stage and defect tables.
 - The interaction spec is ambiguous about what a control does.
