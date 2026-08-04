@@ -71,7 +71,11 @@
   .tile{background:var(--panel);padding:11px 12px}
   .tile .lab{margin:0}
   .big{font-size:23px;letter-spacing:-.02em;display:block;margin:5px 0 1px}
-  .sub{font-size:11px;color:var(--ink-soft)}
+  .sub{font-size:11px;color:var(--ink-soft);display:block}
+  .sub b{color:var(--ink);font-weight:600}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:13px;align-items:start;margin-bottom:13px}
+  .pair .panel+.gl,.pair .gl{margin-top:9px}
+  @media (max-width:1240px){.pair{grid-template-columns:1fr}}
   /* tables */
   table{width:100%;border-collapse:collapse;font-size:13.5px}
   th{font-size:10px;color:var(--ink-soft);text-align:left;font-weight:500;padding:8px 10px;border-bottom:1px solid var(--rule)}
@@ -151,7 +155,7 @@
   </section>
 
   <section aria-labelledby="h-stage">
-    <h2 id="h-stage">Where the run is now</h2>
+    <h2 id="h-stage">Both runs, at the same point in the story</h2>
     <div id="stage"></div>
   </section>
 
@@ -241,7 +245,15 @@ const SPEC_STAGE=ASSISTED_STAGES.find(s=>s.kind==='spec').n,
       BUILD_STAGE=ASSISTED_STAGES.find(s=>s.kind==='build').n,
       PROD_STAGE=ASSISTED_STAGES.find(s=>s.kind==='release').n,
       DECIDE_STAGE=ASSISTED_STAGES.find(s=>s.key==='decide').n,
-      LAST_STAGE=ASSISTED_STAGES[ASSISTED_STAGES.length-1].n;
+      LAST_STAGE=ASSISTED_STAGES[ASSISTED_STAGES.length-1].n,
+      RELEASE_PHASE=CONVENTIONAL_PHASES.find(p=>p.kind==='release').n;
+/* Which conventional phase does the same kind of work as each assisted stage. Written out rather than
+   derived from `kind` at render time: the two lists number different things, and an implicit mapping is a
+   claim nobody signed off. Phase 4 Handoff has no assisted counterpart, and sits with Specify because
+   that is where the two routes diverge. */
+const ALIGN={0:[1],1:[1],2:[1],3:[2],4:[2],5:[3,4],6:[5],7:[6],8:[7],9:[8]};
+function alignedPhaseMax(idx){const p=ALIGN[idx];return p[p.length-1];}
+function stagesInPhase(p){return Object.keys(ALIGN).filter(k=>ALIGN[k].indexOf(p)>=0).map(Number);}
 const KIND={discover:['#7C8798','lt'],concept:['#5C6270','dk'],spec:['var(--dear)','dk'],
   handoff:['#B08A3E','lt'],build:['var(--cheap)','dk'],test:['#4A6FB5','dk'],
   release:['#9AA3B0','lt'],record:['#14161A','dk']};
@@ -260,6 +272,20 @@ const COPY={
  test:['QA owns what counts as correct; automation does the running.','Anything a rule can check gets checked automatically: does it build, does it match the accessibility rules, do the tests pass. The judgement calls stay with people — whether it feels right, whether it is safe, whether the money is correct.','The tests running on every change, and every problem either fixed or written down as accepted.','The situations from stage 3 run automatically on every change. People test by hand in the two places rules cannot help: the money path, and the whole flow on a screen reader.'],
  release:['Product manager owns the read; AI helps with the analysis.','Release to some customers before all of them, then watch what actually happened against the measures agreed at stage 0. The question is whether the thing worked and how much rework it took — not whether the team felt fast.','The result against what we believed, the things that must not get worse, and a decision to expand or hold.','Released to one customer in ten first. The completion rate is read next to the stage 0 measures rather than on its own, because a cancellation flow can post excellent completion numbers while quietly generating refund complaints.'],
  record:['Tech lead and product manager. The stage everyone skips.','Write down what was handed to AI, what came back wrong, and how many hours went into reviewing it. This is the one stage that makes the next project cheaper than this one.','Entries recording what happened, including the parts that went badly.','Review hours as they actually landed, against what was planned. What came back wrong, which kinds of work turned out to be worth handing over and which did not, and the conventions that go back into the codebase so the next project starts further along.']};
+/* The conventional route's narrative. AUTHORED, NOT SOURCED — there is no conventional-run document in
+   the input set, and evidence about the assisted run must not be transplanted onto this one. Four phases
+   have anchors in reference/ai-worked-example.html and reference/ai-process-spine.html, used for their
+   substance only: their durations are on a different scale from the phase table and would contradict it.
+   The rest is written. Nothing here names a count or a defect the model already computes. */
+const CONV_COPY={
+ 1:['Product manager and designers; the reading is done by hand.','Everything already known about the problem is gathered and read by people. It runs as one phase rather than as separate steps, and it ends when the team feels it knows enough to design.','A research deck, a map of how cancelling works today, and a set of themes.','Support contacts are read by hand and sampled rather than counted across the whole set, so the themes that come out of it are the ones a reader noticed. The target for the project is agreed inside this phase.'],
+ 2:['Product designer, with stakeholder reviews at the end.','Directions are sketched, reviewed and narrowed to one. The situations the flow has to handle are the ones the team thinks of — there is no cheap way to generate the rest, so the list is as good as the team’s memory of the domain.','A chosen direction, designed flows, and the scenarios to cover.','The obvious cases get designed: cancelling mid-cycle, a failed last payment. Cases nobody in the room has met are not on the list, and the flow is not designed for them. The retention offer is decided in a review meeting.'],
+ 3:['Product designer; tech lead reviews at the end.','The chosen direction is finished to a high fidelity in the design tool and annotated for the people who will build it. The design file is the specification.','Signed-off designs, annotated, in the design tool.','Every screen drawn at final fidelity, covering the states the team thought of. The refund and pro-rata wording is written into the design; whether it satisfies both markets is a question for later.'],
+ 4:['Designers hand over; the build team receives.','The finished design is walked through with the people who will build it. After that meeting the design file is what they work from, and anything it does not answer is asked as it comes up. This phase has no counterpart on the other route, where the decision is written down instead of handed over.','A walkthrough, and a build team holding the design file.','A two-hour walkthrough with the developers and QA. Three questions come up in the room; the rest arrive over the following days, one at a time, in chat.'],
+ 5:['Frontend and backend developers; tech lead reviews.','The screens, states and API work are written by hand from the design file. Where the design does not say, the developer decides, and what they decide is not always visible to the designer.','The feature built, and a build ready for QA.','The largest phase of the run. Screens and states are written by hand, and the shape of the subscription data is discovered while building against the real service rather than agreed in advance.'],
+ 6:['QA, once the build is finished.','Testing runs as a phase of its own, after there is something to test. Test cases are written from the designs, so coverage is as good as the list of situations agreed at concept.','A list of defects, and a decision about which of them block release.','The flows behave as they were designed to. What turns up here is the situations that were never in the design, and fixing those reopens the concept work rather than the build.'],
+ 7:['Product manager, and the release process.','The feature goes out and what it does is read afterwards. Anything the tests did not cover is found here, by whoever meets it first.','A released feature, and whatever the analytics show.','What the tests could not cover surfaces in the days after release — found by customers and by the support team rather than by the people who built it.'],
+ 8:['Whoever is still on the project.','A meeting at the end. What went well and badly is discussed, and what was learned is a field on a template.','Notes from a meeting.','The model assumes what this phase produces does not reach the next project, which is what its 0.2 assumed days encodes. That is an assumption rather than an observation, and it is editable in the panel below.']};
 const LEVELS=[
  ['thin','Notes on the designs','Comments on the design files and a conversation with the developers. Nothing written for the AI tools to build from, and no separate list of what the tests must check.'],
  ['human','Written up for the team','One document people can read: every flow, every state, the words on screen, the accessibility requirements. Nothing written specifically for the tools or for the tests.'],
@@ -327,6 +353,20 @@ function upTo(r,idx,a){
     reviewHours:rows.reduce((t,x)=>t+x.review,0),
     loops:rows.reduce((t,x)=>t+x.rework.length,0),
     found,escaped:found.filter(x=>x.caught===PROD_STAGE)};
+}
+/* The model books escapes on the row numbered 8 — which is Release & measure on the assisted route, a real
+   stage, and Retrospective on the conventional one, which is not where a customer meets anything. The
+   story column shows conventional escapes at Release so both routes reveal them at the same step; the
+   tally has to read the same way, or the score contradicts the panel beside it. Adds the escaped defects'
+   cost, not the retrospective's own work. */
+function convUpTo(conv,idx,a){
+  const p=alignedPhaseMax(idx), r=upTo(conv,p,a);
+  const e=p>=RELEASE_PHASE&&p<PROD_STAGE?conv.rows.find(x=>x.stage.n===PROD_STAGE):null;
+  if(!e) return r;
+  const effort=r.effort+e.dCost+e.rCost;
+  return {rows:r.rows,effort,calendarDays:effort*a.calendarFromEffort,reviewHours:r.reviewHours,
+    loops:r.loops+e.rework.length,found:r.found.concat(e.found),
+    escaped:r.escaped.concat(e.found.filter(x=>x.caught===PROD_STAGE))};
 }
 function scaleMax(a){
   const conv=upTo(run('conventional',null,false,CONVENTIONAL_PHASES,a),Infinity,a).effort;
@@ -441,8 +481,8 @@ function draw(){
       pending.length?`stage ${pending.map(x=>x.stage.n).join(' and ')} has no cost yet — the choice above decides it`:'',
       'The same work in smaller stages, with the decision written down so tools can build against it and checking '+
       'happening as it goes rather than at the end. This is the run you are walking.');
-  drawStage(asst,now);
-  drawTally(now,convAll,idx);
+  drawStage(asst,now,conv);
+  drawTally(now,convAll,convUpTo(conv,idx,a),idx);
   drawRecord(asst,now,convAll,idx);
   document.getElementById('ordering').innerHTML=orderingHolds(a)?'':
     `<div class="warn"><b>One of your edits has reversed the ordering.</b> Writing less down is now costed as `+
@@ -450,33 +490,60 @@ function draw(){
     `what you entered and have not been corrected — but the expectation that writing less makes the run cost `+
     `more no longer applies, so read them on their own terms.</div>`;
 }
-function drawStage(asst,now){
-  const s=ASSISTED_STAGES[state.stageIndex], [owner,what,out,story]=COPY[s.key];
-  const row=asst.rows[state.stageIndex];
-  let h=`<div class="panel"><div class="shead"><span class="n">${s.n}</span><h3>${esc(s.name)}</h3>`+
-    `<span class="dur">${row.determined?f1(row.total)+' assumed person-days':'no cost yet'}</span></div>`+
-    `<p class="owner">${esc(owner)}</p><p>${esc(what)}</p>`+
+/* one panel body, used for a stage of either route */
+function stagePanel(n,name,dur,copy,found,note){
+  const [owner,what,out,story]=copy;
+  return `<div class="panel"><div class="shead"><span class="n">${n}</span><h3>${esc(name)}</h3>`+
+    `<span class="dur">${dur}</span></div>`+
+    `<p class="owner">${esc(owner)}</p>${note||''}<p>${esc(what)}</p>`+
     `<div class="out"><b>On this brief</b>${esc(story)}</div>`+
-    `<div class="out"><b>What this stage produces</b>${esc(out)}</div>`;
-  if(row.found.length){
-    h+=`<div class="found"><b>${row.found.some(x=>x.caught===PROD_STAGE)
-      ?'Nobody caught these before release · what customers met'
-      :'Caught at this stage · what it would have done'}</b><ul>`+
-      row.found.map(x=>{
-      const escaped=x.caught===PROD_STAGE;
-      return `<li>${esc(PLAIN[x.d.id])}<div class="note">${x.d.id} · ${esc(x.d.label)} · created at stage `+
-        `${x.d.introducedAt}, ${escaped?'nobody caught it before release':'found at this stage'}, `+
-        `assumed cost ${f1(state.assumptions.defectBaseCost*state.assumptions.catchCostMultiplier[x.caught])} days`+
-        (x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE?`, plus one rework loop reopening stage `+
-          `${x.d.introducedAt} ${esc(introducedIn(x.d,'assisted').name)}`:'')+
+    `<div class="out"><b>What this produces</b>${esc(out)}</div>${found}</div>`;
+}
+/* Caught and escaped are listed separately: a phase can hold both, and one heading cannot describe both
+   honestly. `word` is stage or phase, because the two routes number different things. */
+function foundBlocks(row,extra,laneKind,word,a){
+  const all=row.found.concat(extra||[]);
+  const one=(list,escaped)=>!list.length?'':
+    `<div class="found"><b>${escaped?'Nobody caught these before release · what customers met'
+      :'Caught at this point · what it would have done'}</b><ul>`+list.map(x=>{
+      const src=introducedIn(x.d,laneKind), rw=row.rework.indexOf(x)>=0;
+      return `<li>${esc(PLAIN[x.d.id])}<div class="note">${x.d.id} · ${esc(x.d.label)} · created at `+
+        `${word} ${src?src.n+' '+esc(src.name):'?'}, ${escaped?'nobody caught it before release':'found here'}, `+
+        `assumed cost ${f1(a.defectBaseCost*a.catchCostMultiplier[x.caught])} days`+
+        (rw&&src?`, plus one rework loop reopening ${word} ${src.n} ${esc(src.name)}`:'')+
         `.${NO_CONVENTIONAL[x.d.id]?' '+esc(NO_CONVENTIONAL[x.d.id]):''}</div></li>`;
     }).join('')+`</ul></div>`;
-  }
-  if(state.stageIndex===DECIDE_STAGE) h+=choiceBlock('The direction is chosen, and the build starts next. What happens to the three clickable versions built at stage 3?',[
+  return one(all.filter(x=>x.caught!==PROD_STAGE),false)+one(all.filter(x=>x.caught===PROD_STAGE),true);
+}
+/* Escapes sit on phase 8 in the model, but phase 8 is Retrospective, not production. They are shown on
+   Release so both routes reveal what reached customers at the same step of the story. */
+function convPhase(conv,p,a){
+  const row=conv.rows.find(r=>r.stage.n===p), esc8=conv.rows.find(r=>r.stage.n===PROD_STAGE);
+  const extra=p===RELEASE_PHASE&&esc8&&esc8!==row?esc8.found:null;
+  const found=p===PROD_STAGE?foundBlocks({found:[],rework:[]},null,'conventional','phase',a)
+                            :foundBlocks(row,extra,'conventional','phase',a);
+  const shared=stagesInPhase(p);
+  const note=shared.length>1?`<p class="gl">Stages ${shared.slice(0,-1).join(', ')} and `+
+    `${shared[shared.length-1]} of the other route all happen inside this one phase.</p>`:'';
+  return stagePanel(row.stage.n,row.stage.name,f1(row.total)+' assumed person-days',CONV_COPY[p],found,note);
+}
+function drawStage(asst,now,conv){
+  const s=ASSISTED_STAGES[state.stageIndex], a=state.assumptions;
+  const row=asst.rows[state.stageIndex];
+  let h=`<div class="pair"><div><div class="lab">The AI-assisted run · <b>the run you are walking</b></div>`+
+    `<p class="gl">The stages, who owns them and what they produce come from the process document; the `+
+    `detail about this brief comes from a worked example of a run like it.</p>`+
+    stagePanel(s.n,s.name,row.determined?f1(row.total)+' assumed person-days':'no cost yet',COPY[s.key],
+      foundBlocks(row,null,'assisted','stage',a))+`</div>`+
+    `<div><div class="lab">The way most teams work today · <b>at the same point in the story</b></div>`+
+    `<p class="gl">Reconstructed, not recorded. The phases, their costs and the problems come from the `+
+    `model; how the work goes is written, because no record of a run like this exists.</p>`+
+    ALIGN[state.stageIndex].map(p=>convPhase(conv,p,a)).join('')+`</div></div><div class="panel">`;
+  if(state.stageIndex===DECIDE_STAGE) h+=choiceBlock('Your decision on the AI-assisted run. The direction is chosen and the build starts next: what happens to the three clickable versions built at stage 3?',[
     ['probe','keep','Keep the prototype','The version closest to finished stays in the codebase, and the build starts from it rather than from an empty file.'],
     ['probe','delete','Delete the prototypes','All three are thrown away now the direction is settled. The build starts from the written spec and the design system instead.']],
     state.probesKept===null?null:(state.probesKept?'keep':'delete'));
-  if(state.stageIndex===SPEC_STAGE) h+=choiceBlock('Before anyone starts building: how much of the decision gets written down? Each option takes a different amount of time here, and changes what stages 6 and 7 have to work from.',
+  if(state.stageIndex===SPEC_STAGE) h+=choiceBlock('Your decision on the AI-assisted run. Before anyone starts building: how much of the decision gets written down? Each option takes a different amount of time here, and changes what stages 6 and 7 have to work from.',
     LEVELS.map(l=>['spec',l[0],l[1],l[2]]),state.specLevel);
   const blocked=blockReason();
   h+=`<div class="controls"><button type="button" data-act="back" ${state.stageIndex===0?'disabled':''}>Back</button>`+
@@ -497,23 +564,27 @@ function blockReason(){
     return 'Next is blocked: until you choose what gets written down, building and testing have nothing to be costed against.';
   return null;
 }
-function drawTally(now,convAll,idx){
-  const t=[['Team time',f1(now.effort),'assumed person-days · the familiar way, whole run: '+f1(convAll.effort)],
-    ['Elapsed time',f1(now.calendarDays),'assumed working days, team members working in parallel'],
-    ['Senior review',f1(now.reviewHours),'assumed hours spent reading back what was produced'],
-    ['Problems found',String(now.found.length-now.escaped.length),'found and fixed inside the run, by stage '+idx],
-    ['Reached customers',String(now.escaped.length),'escaped to production before anyone caught them'],
-    ['Stages reopened',String(now.loops),'rework loops fired so far']];
-  document.getElementById('tally').innerHTML=t.map(([k,v,s])=>
+function drawTally(now,convAll,convNow,idx){
+  const t=[['Team time',f1(now.effort),f1(convNow.effort),'assumed person-days'],
+    ['Elapsed time',f1(now.calendarDays),f1(convNow.calendarDays),'assumed working days, team in parallel'],
+    ['Senior review',f1(now.reviewHours),f1(convNow.reviewHours),'assumed hours reading work back'],
+    ['Problems found',String(now.found.length-now.escaped.length),
+      String(convNow.found.length-convNow.escaped.length),'found and fixed inside the run'],
+    ['Reached customers',String(now.escaped.length),String(convNow.escaped.length),
+      'escaped to production before anyone caught them'],
+    ['Stages reopened',String(now.loops),String(convNow.loops),'rework loops fired so far']];
+  document.getElementById('tally').innerHTML=t.map(([k,v,cv,s])=>
     `<div class="tile"><span class="lab">${esc(k)}</span><span class="big">${v}</span>`+
+    `<span class="sub"><b>${cv}</b> the familiar way</span>`+
     `<span class="sub">${esc(s)}</span></div>`).join('');
+  const ph=CONVENTIONAL_PHASES.find(p=>p.n===alignedPhaseMax(idx));
   document.getElementById('tallynote').textContent=
-    `Every figure is assumed, not measured. The same brief delivered the familiar way, for the whole run: `+
-    `${f1(convAll.effort)} person-days, ${f1(convAll.calendarDays)} working days, `+
-    `${f1(convAll.reviewHours)} review hours, ${convAll.escaped.length} problems reaching customers, `+
-    `${convAll.loops} stage${convAll.loops===1?'':'s'} reopened. `+
-    `A problem costs nothing until the stage that finds it, which is why these numbers can look calm for `+
-    `several stages and then move sharply.`;
+    `Every figure is assumed, not measured. Both columns are read at the same point in the story: the `+
+    `AI-assisted run has finished stage ${idx}, and the familiar way has finished phase ${ph.n} `+
+    `${ph.name}. The familiar way's figures move as you advance and never in response to either of your `+
+    `choices — its strip above always shows the whole run, which comes to ${f1(convAll.effort)} `+
+    `person-days with ${convAll.escaped.length} problems reaching customers. A problem costs nothing `+
+    `until the stage that finds it, which is why these numbers can look calm and then move sharply.`;
 }
 function drawRecord(asst,now,convAll,idx){
   const wrap=document.getElementById('recordwrap');

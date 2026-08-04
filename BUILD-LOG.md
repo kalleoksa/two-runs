@@ -967,3 +967,154 @@ Contrast recomputed for every text pairing: lowest is 5.26.
   stop, and record it here.
 - **Screen reader.** The live region and labels are unchanged, but the new copy has not been heard.
 - **Human review time.** Still not reported. This log stays incomplete until it is.
+
+---
+
+## 17. Both runs, told at once
+
+Requested by the owner: *"let's roll both stories at the same time side by side? If we also can see all
+the steps as a story in conventional way it's easier to understand the differences."*
+
+Fair, and the gap was structural rather than cosmetic. §16 made one route readable. The other was a grey
+strip with a total, so every difference between the two processes had to be inferred from bar widths. The
+artifact's whole claim is about *where* problems get found, and it was asking the viewer to take that on
+trust.
+
+### The blocker, which is the reason this is not just typing
+
+**There is no conventional-run document in the input set.** §14 established that when the owner asked for
+a reconciliation; I re-verified it. `reference/` holds `ai-process-spine.html` and `ai-worked-example.html`
+and both describe the assisted run. §14 also set the rule that a previous attempt broke: evidence about
+the assisted lane must not be transplanted onto the conventional one.
+
+So a conventional narrative is authored. Put to the owner as four decisions before any code changed; all
+four answered. What the documents *do* support, used for substance and never for duration:
+
+| Anchor, quoted | Phase |
+|---|---|
+| *"clustered … in an afternoon. Previously two weeks of sampling."* | 1 Discovery |
+| *"you have to already suspect those states to build them … previously not available at any price"* | 2 Concept |
+| *"scaffolded from tokens and 5.2 in two days for what was previously a week"* | 5 Build |
+| *"a template field that is empty nearly everywhere"* | 8 Retrospective |
+
+**Their durations are deliberately not used.** "Two weeks of sampling" against a Discovery phase the spec
+prices at 7 person-days is a contradiction waiting to be spotted by a reader, and the reference's own
+conventional split (15/22/6/35/14/8) is on a different scale again from the spec's phase table. So the
+copy carries the anchors' substance — read by hand and sampled rather than counted; the states you already
+suspect are the states you design — and states no duration anywhere. That is F5 applied to authored
+narrative rather than to computed figures.
+
+Invented outright: **3 Design to spec, 4 Handoff, 6 QA phase, 7 Release.** Every panel in that column
+says so on screen, under the column heading, not in a footnote. The assisted column now says where its
+copy comes from too — otherwise a reader would reasonably assume parity between a reconstruction and a
+worked example.
+
+### The alignment is data, not a runtime guess
+
+`ALIGN` maps each assisted stage to the conventional phase doing the same kind of work. It could have been
+derived from the shared `kind` field at render time. It is written out instead, for the reason §14 added
+`conventionalIntroducedAt`: when two lists number different things, an implicit mapping is a claim nobody
+signed off. `SPEC-machine.md` carries the table.
+
+Phase 4 Handoff has no assisted counterpart at all, and sits with Specify — which turns out to be the
+best screen in the artifact. Left: write the decision down for three readers. Right: finish the design,
+sign it off, hand it over, and answer questions in chat afterwards. Stated as what each route does, with
+no adjective doing work in either direction.
+
+### The near-miss, and it is the most valuable entry in this round
+
+The number `8` means two things. In the defect table, `caughtAt: 8` means escaped to production. In the
+phase lists, row 8 is `Release & measure` on the assisted route — a real stage where escapes belong — and
+`Retrospective` on the conventional one, which is not where a customer meets anything. The source already
+carried a comment about this from §10's era, which is the only reason I looked.
+
+I handled it in the story column: conventional escapes display on phase 7 Release, so both routes reveal
+what customers met at the same step. Then I built the paired tally from the aligned partial run, which
+counts phases up to 7 — and the escapes are stored on 8. **At stage 8 the tally would have read "0 reached
+customers" directly beside a panel naming two customers' problems.**
+
+Not caught by a criterion. G5 did not exist yet, and G2 as first drafted only checked the stage 9 total —
+which was correct, because by stage 9 phase 8 is included and everything reconciles. The bug lived
+entirely in the middle of the walkthrough and disappeared at both ends. I found it by reading the two
+regions against each other while writing the plan's verification section, before either was built.
+
+Fixed with `convUpTo()`, which adds the escaped defects' cost from Release while leaving the
+retrospective's own 0.2 days where it belongs. Both regions now answer the same question the same way.
+G5 was written afterwards to make the rule checkable, and G2 was strengthened from "the total matches" to
+"monotonic across the walkthrough and exact at the end".
+
+The pattern worth naming: **the last two rounds' worst defects were both consistency failures between two
+places on one screen**, not arithmetic failures. §16's tense bug made a caught defect read as shipped;
+this one would have made a shipped defect read as caught. The model was right both times.
+
+### What the paired tally exposed, which nobody asked for
+
+At stages 0, 1 and 2 the conventional column reads 7.0 person-days while the assisted run climbs 2.0 →
+4.0 → 9.0. **The AI-assisted run is behind at stage 2** — its three discovery stages cost more than the
+single Discovery phase they replace. That was always true in the model and was invisible while the only
+comparison on screen was whole-run against whole-run. Showing both at the same point made the artifact
+less flattering to the process it demonstrates, which is the correct direction for it to move, and it is
+left exactly as the model produces it.
+
+### Invented — not in any spec
+
+- **Eight phases of conventional narrative**, four fields each (`CONV_COPY`), provenance above.
+- Two authored details worth flagging because they read like data and are not: the Handoff walkthrough is
+  "two hours" with "three questions in the room", and Discovery's themes are "the ones a reader noticed".
+  Neither is computed; neither contradicts a figure.
+- **`ALIGN`, `alignedPhaseMax()`, `stagesInPhase()`, `convUpTo()`, `convPhase()`** and the refactor of
+  the stage panel into `stagePanel()` / `foundBlocks()` so both routes render through one path — which is
+  also why the conventional column cannot drift from the assisted one in styling or in disposition
+  wording.
+- `foundBlocks()` now splits caught from escaped into two blocks. The old single heading was fine while
+  only stage 8 held escapes; the conventional Release phase holds both at once, and one heading cannot
+  describe both honestly.
+- **Section G in `SPEC-tests.md`**, six criteria. **B5 amended** — it said the conventional lane "never
+  changes", which conflated the strip with the figures and became untrue of the figures once the owner
+  chose to show both runs at the equivalent point. The substance is unchanged and G3 is the check.
+
+### Which of G1–G6 passed first pass
+
+| # | Outcome |
+|---|---|
+| G1 | Passed. Verified by script rather than by reading the table: all ten stages covered, all eight phases covered, Handoff on stage 5, mapping monotonic. |
+| G2 | Failed as first written, in the sense that it was too weak to catch the escape bug. Strengthened, then passed: monotonic across all ten stages, exact at 96.0 / 59.5 / 26.4 / 5 found / 2 escaped / 4 loops. |
+| G3 | Passed. Automated — the conventional column's rendered text captured at all ten stages across all six choice paths and diffed. Identical. |
+| G4 | Passed after one correction: the provenance line existed only on the conventional column, so the two columns' panels started at different heights and a reader would have assumed the unlabelled one was sourced. Both columns now carry one. |
+| G5 | Did not exist until the near-miss above created it. |
+| G6 | Passed. Grep for counts and durations in copy returns only the brief's own substance (a 12-month promotion), sourced narrative detail, and the record summary's computed pluralisation. |
+
+### Also corrected
+
+- The stage 5 choice prompt did not say whose decision it was. Harmless in a single-column layout,
+  ambiguous the moment a second route appeared beside it. Both prompts now open "Your decision on the
+  AI-assisted run".
+- The shared-phase note ("stages 0, 1 and 2 all happen inside this one phase") sat above the panel and
+  pushed the right column down. Moved inside, under the ownership line.
+
+### Verified
+
+731 lines against the 800 cap. Model totals byte-identical across all six paths, diffed against the
+baseline captured before the first edit of §16. Full suite: A1–A10, B1–B6, C1–C5, D1–D6, E1–E5, F1–F6,
+G1–G6. Two columns at 1280×800 and 1920×1080, 583.5px each, no horizontal overflow at either. Ten stages
+screenshotted and read. No console or page errors on any of the six paths. Invalid input still rejected
+under en-GB, fi-FI and de-DE. "Assumed" now appears 24 times on screen. No new colours, so E4 stands.
+
+**A script error, and the first time the pattern did not repeat.** My G2 script clicked Next before making
+the stage 4 choice and timed out on a disabled button — the same mistake as §13, B1 blocking exactly as
+specified. §13 records that I suspected the artifact first; this time I read the disabled attribute in the
+error output and fixed the script without opening the source. Recorded because three earlier entries
+recorded the opposite.
+
+### What was not checked
+
+- **Whether two columns is one column too many for a stakeholder.** The layout stacks below 1240px, which
+  I have looked at, but the request came from wanting the comparison to be easier — and it is possible
+  that twice the reading is harder, not easier, however well aligned. Same disqualification as §16: I have
+  read the document set and cannot judge this.
+- Any real device, iOS Safari, or the deployed page. Egress to the Pages domain is still blocked here.
+- Screen reader on the paired layout. The two columns are separate `div`s with heading text, in source
+  order left then right, which should read as two sequential sections — unverified by ear.
+- Whether the four invented phases describe anything a team would recognise. They are mine, they are
+  marked as mine, and the person to correct them is someone who has delivered this way.
+- Human review time. Still not reported.
