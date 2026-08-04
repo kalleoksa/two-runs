@@ -96,6 +96,26 @@ processes could be read rather than inferred from bar widths.
 | G5 | Conventional escapes appear at Release, not at Retrospective — in the story column and in the tally alike. If the two regions disagree about when a problem reached a customer, one of them is lying. |
 | G6 | No copy in either column states a count, a duration or a magnitude the model computes. The panels describe how the work goes; the numbers come from the model and appear once. |
 
+## H. The run sheet
+
+Added with `checklist.html`, which is the first file in this set allowed to give instructions. These
+criteria exist because that permission is narrow and easy to widen by accident.
+
+| # | Criterion |
+|---|---|
+| H1 | Every item on the sheet either cites the problem it prevents, or is marked *authored*. No item stands without provenance. |
+| H2 | No figure anywhere in `checklist.html`: no days, hours, multipliers, effort counts or percentages. Stage numbers and problem ids are identifiers and do not count. Grep, not judgement. |
+| H3 | Stage numbers and names match `ASSISTED_STAGES` exactly, and every cited problem id and label tag matches `DEFECTS`. Checked by script — two files naming the same things is the same drift risk that `conventionalIntroducedAt` and `ALIGN` were written out to avoid. |
+| H4 | Prints without splitting a stage block, a decision box or a closing section across a page. |
+| H5 | No `<script>`, no network reference, no storage. Opens from the filesystem. |
+| H6 | The demo's crossover line recomputes with the assumptions and agrees with the totals at every setting — including the case where all six paths sit above the conventional total, and the case where none do. |
+| H7 | The demo advises the reader nowhere, and the run sheet carries no figures. Precisely: `demo.html` may describe what a stage *consists of* in the imperative mood the process documents use — "agree what problem is being solved", "write the decision down" — because that describes the work rather than instructing the viewer. What it must never do is tell the reader what they should do about their own choices: no second-person prescription — "you should", "make sure", "be sure to", "we recommend", "you need to", "best practice" — and no evaluation of the option they picked. ("Always" and "never" are not markers: both appear descriptively throughout, as in "a flow that was never designed for them", and grepping for them only produces noise.) The stage 9 block reports what the model catches and where, and stops there. |
+
+H1, H2, H3, H5 and H6 are scripts. H4 is a print-to-PDF and a read. H7 is a reading with a grep behind it —
+for second-person prescriptions, not for imperative verbs, which the first draft of this criterion did and
+which flagged all ten stage descriptions. The same disqualification applies as F1: the person best placed
+to judge the boundary has not read these documents.
+
 Neither F1 nor F6 can be automated into a pass or fail. The check for both is to read the page top to
 bottom as though presenting to someone who has never seen the doc set, and list every sentence that would
 need explaining aloud. An empty list is the pass condition.

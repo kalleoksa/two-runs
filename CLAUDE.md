@@ -4,7 +4,21 @@ Working instructions for this repository. Read this first, then the specs.
 
 ## What this is
 
-A single deliverable: `demo.html` in the repo root. A deterministic, client-side simulation comparing two delivery processes on one brief. It exists to be presented, and it is itself the worked output of the process it demonstrates — which is why the build log at the end of this file matters as much as the artifact.
+Two deliverables, with different jobs and different rules.
+
+`checklist.html` — a run sheet for a team running the assisted process on a real project for the first
+time. Added after a test user asked for *"jonkunlainen työkalu prosessin juoksuttamiseen"*, of the form
+"take this into account now and you save time in the next stage". **It is allowed to instruct.** That is
+the one place the neutrality rule does not reach, because a checklist that refuses to recommend anything
+is not a checklist. It is still forbidden from claiming a magnitude: no days, no hours, no multipliers,
+nothing an assumption could change. Every item either cites the problem it prevents by the id used in
+`demo.html`, or is marked *authored* — practice that the model does not encode. Static, no script.
+
+`demo.html` — the simulation, described below. **It reports and never advises.** The boundary between the
+two files is deliberate and load-bearing: the demo shows what a choice cost, the run sheet says what to do
+about it. Do not migrate imperatives into the demo, and do not migrate figures into the run sheet.
+
+The rest of this file is about `demo.html`. It is a deterministic, client-side simulation comparing two delivery processes on one brief. It exists to be presented, and it is itself the worked output of the process it demonstrates — which is why the build log at the end of this file matters as much as the artifact.
 
 ## Reading order
 
