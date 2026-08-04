@@ -825,3 +825,145 @@ alters the numbers the whole artifact exists to show.
 It was also found in the tooling — by running the thing under three locales — rather than argued about in
 a document. Fixed with `valueAsNumber` and `lang="en"`, verified under en-GB, fi-FI and de-DE. Still
 unverified on iOS Safari, where the reviewer originally saw comma formatting.
+
+---
+
+## 16. The artifact was written for the people who wrote the specs
+
+Reported by the owner: *"Data is fine for now, but problem is that from story and presentation
+perspective this is too technical. The story needs to be easily understandable and relatable by any
+stakeholder: business, designer, developer."*
+
+This is the fourth finding of the shape §13 named, and the pattern it stated has now held four times for
+four: **every defect a criterion caught was mine to make, and every defect about whether the thing
+communicates came from a person looking at it.** Nothing in A–E can fail on an unreadable page. All 32
+criteria passed on the version being complained about.
+
+### Where the technicality came from, which is not where I expected
+
+I assumed I had written insider copy. I had not — I had faithfully reused it. `CLAUDE.md` names
+`reference/ai-process-spine.html` as the source for stage wording and says to reuse it rather than write
+new descriptions. That reference copy reads *"Prompt-to-prototype, flows and states, edge-case sweeps,
+heuristic passes"* and *"Rule-checkable first: types, lint, unit, accessibility rules"*. It is written for
+someone who has read the whole document set. Reusing it verbatim was the instruction, and following the
+instruction produced the defect.
+
+So the fix required going against a standing instruction, which `CLAUDE.md` makes a stop-and-ask. Put to
+the owner as one of four decisions, all four answered before any code changed:
+
+| Decision | Answer |
+|---|---|
+| Stage copy: rewrite plainly, or keep reference wording and add a plain line beside it | Rewrite. Keep every claim, drop the shorthand. |
+| Choice button labels, which `SPEC-machine.md` fixes verbatim | Rename, and edit the spec to match. |
+| Line cap, then at 612 of 700 | Raised to 800. |
+| Presenter narrating, or a link read alone | Read alone. The page carries its own argument. |
+
+`CLAUDE.md` amended: the reference governs the visual treatment, the stage names and the substance of
+each stage — not the wording. `SPEC-human.md` gained a section on being read without a presenter.
+`SPEC-machine.md` gained a paragraph saying the button labels are presentation and the
+`thin`/`human`/`triad` keys are the contract, so the next person to reword them does not think they are
+touching the model.
+
+### The model was not touched, and that is checked rather than asserted
+
+Totals for all six paths were captured before the first edit by evaluating the model section out of the
+file in node, and diffed after every round of changes. Byte-identical throughout: assisted 52.7 / 76.9 /
+117.5 with probes deleted, 65.2 / 89.4 / 130.0 with probes kept, conventional 96.0. No change to
+`DEFECTS`, the stage tables, `DEFAULT_ASSUMPTIONS`, or any function in the model section. No new state
+field, no new control.
+
+### The one that passed its own check while being wrong
+
+The `D2` failure mode again, in my own copy, and the most useful entry here.
+
+Each defect gained a plain-language consequence sentence. I wrote them in the past tense, because I was
+writing them while thinking about the stage 8 reveal, where the defects have shipped:
+
+> D3 — *"A customer cancelling late on the last evening of their billing period **was charged** for
+> another month."*
+
+That sentence is used at whatever stage the defect surfaces. On the triad path D3 is caught at stage 7,
+fixed, and no customer is ever charged anything — and the panel read as though one had been. The copy was
+internally consistent, grammatical, checked against the defect table, and it **overstated the cost of a
+process that had just worked correctly**. It made the artifact argue for its own conclusion by accident,
+which is precisely what the forbidden list exists to prevent.
+
+No criterion covered it. F2 as I first drafted it required a plain sentence per defect and would have
+reported a pass. I found it by screenshotting the stage 7 panel on the triad path and reading it — not by
+reading source, and not by any check I had written. Every sentence is now present tense (*"is charged"*),
+and the block heading carries the disposition: *"Caught at this stage · what it would have done"* against
+*"Nobody caught these before release · what customers met"*. F2 was amended afterwards to require the
+present tense and to say why.
+
+The general lesson, which is the same one as §15's comma: the checks I write encode what I was already
+thinking about. This one encoded the reveal and missed the other eight stages.
+
+### Invented — not in any spec
+
+- **Nine consequence sentences**, one per defect (`PLAIN`, keyed by id). Invented illustration. Held to
+  the existing table: no sentence states a magnitude, no cost comes from anywhere but the model, and
+  `DEFECTS` is untouched so the labels remain the spec's. Two are worth flagging as authored claims
+  rather than derived ones — D2's *"invented a status that does not exist"* and D9's *"a stand-in the
+  build inherited rather than replaced"* — because they name a mechanism the defect table only labels.
+- **Plain names for the three spec levels**, used in the stage 9 summary sentence: *notes on the
+  designs*, *a write-up for the team*, *documents for the team, the tools and the tests*.
+- **A definition of "probe" in the legend.** Found by the F1 grep: the stage name *Concept & probe* is
+  model data fixed by `SPEC-machine.md`, so it is on screen from load, while the word was only explained
+  in the stage 3 description — which a reader does not reach until stage 3. Defined next to the strips
+  instead.
+- **Two CSS classes**, `.gl` for the plain gloss under each strip and `.sum` for the stage 9 summary
+  paragraph. No new colours: contrast recomputed anyway, 5.26 and 15.60 against paper, both AA.
+- **Plain group headings in the assumptions panel** — *"How much more a problem costs, depending on when
+  it is found"* for what was *"Catch cost multiplier, by stage caught"*. The panel is not collapsed, not
+  moved, and not shortened; every field is still there.
+- **A section F in `SPEC-tests.md`**, six criteria, because none of A–E could have failed here.
+
+### Which of F1–F6 passed on the first pass, unmodified
+
+Honest answer: the question is malformed for this entry, because F1–F6 were written in the same pass as
+the copy they check. Recorded as it actually went:
+
+| # | Outcome |
+|---|---|
+| F1 | Failed on first pass. The grep against *rendered* text — not source — found `probe` and `handoff` on screen undefined, and `enum` inside a retained engineering label. Fixed for `probe`; `handoff` is defined by the conventional strip's gloss ("a design signed off and handed over to be built"); `enum` sits under a plain sentence that explains it, and is deliberately kept so a developer recognises the defect. |
+| F2 | Passed structurally, failed on tense. See above. |
+| F3 | Passed. Then improved: the "how to read a strip" line was below both strips on the first pass, so a reader met the strips before the explanation. Moved above. |
+| F4 | Passed. Then two wording bugs found by reading output across all six paths — *"0 problems reached customers"* where *"no problems"* was wanted, and a hardcoded *"Two of the nine happen only on this route"* which is false when the prototypes are deleted and D9 is not in the run. The second is an F5 breach in miniature: a magnitude stated in prose, correct on one path and wrong on another. Now computed. |
+| F5 | Passed on the copy written in this pass, having been the rule I was watching for. |
+| F6 | One correction: the third spec-level button label read *"Written for the team, the tools and the tests"*, wrapped onto two lines, and rendered visibly larger than the other two. Parallel length is part of neutrality when the buttons sit side by side. Shortened to *"Written for team, tools and tests"*. |
+
+### Also corrected, from the same reading
+
+- `SPEC-tests.md` D5 still said **600 lines** while `CLAUDE.md` and `SPEC-machine.md` said 700. The one
+  constraint written into all three documents disagreed in all three, and had done since the 600→700
+  raise in §14. All three now say 800.
+- The ordering-broken warning still promised that the thin path would land near the conventional lane —
+  a claim from A3, which §15 deleted. Rewritten.
+- `Out` as the label on every stage's output block. Replaced with *"What this stage produces"*, which is
+  what `SPEC-human.md` calls it anyway.
+- The `NO_CONVENTIONAL` notes said *"a generated-output failure mode with no human equivalent"*. Same
+  point, now in words: *"it is a way generated code fails, and a person writing the same code does not
+  fail that way."*
+
+### Verified
+
+660 lines, against the 800 cap. Model totals identical across all six paths. Full criteria suite
+re-checked: A1–A10, B1–B6, C1–C5, D1–D6, E1–E5, F1–F6. Driven under Chromium at 1280×800 and 1920×1080,
+all six paths to stage 9, no console or page errors, no `NaN`/`undefined`/`Infinity` in rendered text.
+"Assumed" appears 22 times on screen. Invalid input re-checked under en-GB, fi-FI and de-DE after the
+panel copy changed — empty and negative both flagged, last valid value retained, §15's fix intact.
+Contrast recomputed for every text pairing: lowest is 5.26.
+
+### What was not checked
+
+- **iOS Safari and any real device.** Same gap as §11 and §15. Everything above is Chromium in this
+  container; the session's egress policy still blocks the Pages domain, so every claim here is about the
+  file, not the deployed page.
+- **Whether a stakeholder can actually follow it.** This is the only thing the entry is about and it is
+  the one thing I cannot verify. I read the page as though presenting it, listed the sentences that would
+  need explaining aloud, and fixed them until the list was empty — but I have read the whole document
+  set, which is exactly the disqualification. Four rounds of this now say the check is a person who has
+  not: give it to someone in business or engineering who has never seen these files, watch where they
+  stop, and record it here.
+- **Screen reader.** The live region and labels are unchanged, but the new copy has not been heard.
+- **Human review time.** Still not reported. This log stays incomplete until it is.

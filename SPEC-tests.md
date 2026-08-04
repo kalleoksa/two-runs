@@ -53,7 +53,7 @@ Criteria are written as invariants rather than fixed totals, because the assumpt
 | D2 | No framework, no CDN reference, no build artifact. |
 | D3 | No `localStorage`, `sessionStorage`, `indexedDB`, `fetch`, or `XMLHttpRequest` anywhere in the source. |
 | D4 | No `<form>` element. |
-| D5 | Under 600 lines including styles. Over that, stop and report rather than continuing. |
+| D5 | Under 800 lines including styles. Over that, stop and report rather than continuing. (Said 600 until this was noticed: `CLAUDE.md` and `SPEC-machine.md` had been raised to 700 and this line was not, so the three documents disagreed about the one constraint written in all three. Now 800 in all three.) |
 | D6 | Colours and type come only from the token list in `SPEC-machine.md`. No hex value outside that list except the named segment colours. |
 
 ## E. Quality floor
@@ -65,6 +65,26 @@ Criteria are written as invariants rather than fixed totals, because the assumpt
 | E3 | Respects `prefers-reduced-motion`; with it set, no transitions run. |
 | E4 | Text contrast meets WCAG AA against `--paper` and `--panel`. |
 | E5 | Renders correctly at 1280×800 and 1920×1080. Below 1024px wide it may show a single "desktop only" message rather than attempting to reflow. |
+
+## F. Comprehension
+
+Added after the owner reported that the artifact was too technical to follow — the fourth finding of that
+shape (`BUILD-LOG.md` §9, §10, §13), and the fourth that every criterion above passed straight through.
+A—E check that the figures are right and the controls behave. None of them ask whether the screen means
+anything to someone who has not read this document set. These do.
+
+| # | Criterion |
+|---|---|
+| F1 | No term appears on screen that a reader outside the team would not know and cannot find defined on screen. Grep list: `5.1`, `5.2`, `5.3`, triad, probe, escaped, rework, effort day, spec level, enum, handoff, orchestrate, guard metric. A hit is a pass only if the same screen defines it. |
+| F2 | Every defect, wherever it is shown, carries one plain-language sentence naming who notices and what happens to them, alongside its id and engineering label. Present tense, so the sentence reads correctly whether the defect was caught at its stage or shipped. |
+| F3 | Each of the two runs is described in one sentence saying what that process actually does, next to its strip, and the strips are explained before the reader meets them. |
+| F4 | Stage 9 states in sentences, before the table, what was chosen, what came back, and how the totals compare — and reads equally flat when the assisted run is the more expensive one. |
+| F5 | No copy states a magnitude. Every figure is one assumption edit away from changing, so copy names the assumption, never its current value. (§11 found this class; it applies to all narrative copy, not only the two definitions it was found in.) |
+| F6 | B4 holds across all copy, not only the button labels: no label, prompt, description, or consequence sentence lets a reader infer which option is recommended, and the options stay parallel in length and register. |
+
+Neither F1 nor F6 can be automated into a pass or fail. The check for both is to read the page top to
+bottom as though presenting to someone who has never seen the doc set, and list every sentence that would
+need explaining aloud. An empty list is the pass condition.
 
 ---
 

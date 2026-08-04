@@ -24,6 +24,8 @@
   section{margin-bottom:32px}
   .lab{font-size:10px;color:var(--ink-soft);margin-bottom:6px}
   .lab b{color:var(--ink);font-weight:400}
+  .gl{font-size:13px;color:var(--ink-soft);margin-bottom:7px;max-width:92ch}
+  .sum{font-size:15px;margin:0 0 15px;max-width:88ch}
 .brief{background:var(--panel);border:1px solid var(--rule);padding:clamp(14px,2vw,20px);margin-bottom:30px}
   .brief dl{display:grid;grid-template-columns:auto 1fr;gap:7px 20px;margin:0;font-size:14.5px}
   .brief dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);padding-top:4px}
@@ -113,9 +115,12 @@
 <div class="wrap" id="app">
   <div class="eyebrow">AI in design &amp; development · two runs · v1</div>
   <h1>One brief. Two processes. Your two decisions.</h1>
-  <p class="lede">The conventional run is fixed above as a reference. You advance the assisted run one stage at a time
-    and make two choices along the way. Every figure below is computed from the assumed inputs in the panel at the
-    bottom, all of which you can edit. Nothing here is measured, and the assisted run is free to come out worse.</p>
+  <p class="lede">A team has to build self-service cancellation. Here the same job is delivered twice: once the way
+    most teams work today, and once with AI in the loop. You walk the second run stage by stage and make the two
+    decisions a real team would argue about — what to do with the prototypes, and how much to write down before
+    anyone starts building. What those decisions cost turns up in the strips and the numbers as you go.</p>
+  <p class="lede">Nothing here is measured. Every figure comes from the assumptions at the bottom of the page, which
+    you can change, and the AI-assisted run is free to come out the more expensive one.</p>
 
   <div class="brief">
     <dl>
@@ -131,35 +136,42 @@
   </div>
 
   <section aria-labelledby="h-lanes">
-    <h2 id="h-lanes">Two lanes · width is assumed effort</h2>
+    <h2 id="h-lanes">The two runs · width is time spent</h2>
+    <p class="gl">Each strip below is one whole run of the project, laid out left to right in the order the
+      work happens, with one block per stage. Width is time, so the wider strip is the more expensive run.</p>
     <div id="lanes"></div>
-    <p class="note legend"><b>Rework loop</b> — a defect introduced at Specify or earlier that is not
-      found until Build or later reopens the stage it came from. The arrow points back at that stage, and
-      the run is charged the assumed rework loop cost on top of the defect's own cost.<br>
-      <b>Escaped</b> — no stage caught it before release, so it was found in production. Charged at the
-      assumed production multiplier, and drawn as the outlined block at the end of each lane rather than
-      inside a phase, because discovery after release is not a stage of either process.</p>
+    <p class="note legend"><b>Probe</b> — one of the rough, throwaway versions built at stage 3 for the
+      team to argue with, which is where that stage's name comes from.<br>
+      <b>Rework loop</b> — a problem created at Specify or earlier that nobody finds until Build or later
+      reopens the stage it came from. The arrow points back at that stage, and the run is charged the
+      assumed rework loop cost on top of what the problem itself cost.<br>
+      <b>Escaped</b> — no stage caught it before release, so a customer met it first. Charged at the
+      assumed production multiplier, and drawn as the outlined block at the end of each strip rather than
+      inside a stage, because finding something after release is not a stage of either process.</p>
   </section>
 
   <section aria-labelledby="h-stage">
-    <h2 id="h-stage">Current stage</h2>
+    <h2 id="h-stage">Where the run is now</h2>
     <div id="stage"></div>
   </section>
 
   <section aria-labelledby="h-tally">
-    <h2 id="h-tally">Running tally · all figures assumed</h2>
+    <h2 id="h-tally">The score so far · every figure assumed</h2>
     <div class="tally" id="tally"></div>
     <p class="note" id="tallynote"></p>
     <div class="dials" id="dials"></div>
   </section>
 
   <section id="recordwrap" aria-labelledby="h-record" hidden>
-    <h2 id="h-record">Stage 9 · the run record</h2>
+    <h2 id="h-record">Stage 9 · what came back wrong</h2>
     <div id="record"></div>
   </section>
 
   <section aria-labelledby="h-ass">
     <h2 id="h-ass">Assumptions · every number the model uses, all assumed, all editable</h2>
+    <p class="note">Every figure on this page is produced by the numbers below. We chose them; nobody measured
+      them. Change any of them and everything above changes with it — including in the direction that makes the
+      AI-assisted run the more expensive one.</p>
     <div id="ordering"></div>
     <div class="fields" id="fields"></div>
     <div class="controls">
@@ -234,24 +246,38 @@ const KIND={discover:['#7C8798','lt'],concept:['#5C6270','dk'],spec:['var(--dear
   handoff:['#B08A3E','lt'],build:['var(--cheap)','dk'],test:['#4A6FB5','dk'],
   release:['#9AA3B0','lt'],record:['#14161A','dk']};
 const NO_CONVENTIONAL={
-  D2:'Does not occur in the conventional run: a generated-output failure mode with no human equivalent. A point in the conventional method’s favour.',
-  D9:'Does not occur in the conventional run: it requires a high-fidelity probe, which that process does not produce.'};
+  D2:'Cannot happen on the familiar route: it is a way generated code fails, and a person writing the same code does not fail that way. A point in favour of the familiar route.',
+  D9:'Cannot happen on the familiar route: it needs a prototype realistic enough to be mistaken for the real thing, and that process does not produce one.'};
 /* stage copy reused from reference/ai-process-spine.html and the worked example */
 const COPY={
- value:['PM decides. No delegation.','What problem, for whom, why now. Why AI at all rather than the conventional route. What it costs.','One page: hypothesis, target, guard metrics, budget, kill criteria.','Deflection target and regulatory deadline written down, with guard metrics named up front: refund complaints, cancel-then-return rate, contact-centre volume for adjacent reasons.'],
- scope:['PM with tech lead and service designer.','Problem definition, user and business need, explicit non-goals.','Scope note with an explicit non-goals section.','In: monthly self-serve plans. Out: annual, enterprise, partner-billed, family-plan secondary members. The non-goals are explicit, because this is the list agents will otherwise cheerfully build against later.'],
- research:['Designers own it; AI compresses the reading.','Desk research, domain study, synthesis of existing material. AI compresses reading; it does not supply evidence.','Theme set with counts, current-state service map, list of what is not known.','Around 8,000 support tickets and call summaries clustered into candidate themes in an afternoon, then a hand-coded sample of 100 checked against the clusters. Two clusters were artifacts of phrasing and got merged; one real theme had been split in three.'],
- probe:['Product designer, content designer, QA joins early.','Prompt-to-prototype, flows and states, edge-case sweeps, heuristic passes. Cheap artifacts to argue with, then real users.','Chosen direction, surviving scenarios, session findings, open legal questions.','Three clickable variants from prompts in a day and a half. An edge-case sweep produces 40 scenarios from the domain model: mid-cycle cancellation, failed last payment, active billing dispute, promo lock-in, account in collections. Six moderated sessions on variant B find five problems the simulated passes did not.'],
- decide:['PM decides. Tech lead, legal, service designer consulted.','Continue, pivot, or drop. Written down, with the reason. This is the gate AI cannot stand in.','Decision record: what, why, what was rejected, who was in the room.','Variant B proceeds. No retention offer before the cancellation is confirmed, on legal risk in one market and trust cost in both, so the offer moves to the confirmation screen. The reason is recorded, because in four months someone will ask why the funnel has no save step.'],
- spec:['PM owns coherence. Designers own 5.1, PM and tech lead own 5.2, QA owns 5.3.','One decision, written three ways for three audiences: the team, the model, the check. Same content, different reader.','Spec documents in the repo, in version control, reviewed together in one sitting.','5.1 carries the flows, every state including the ugly ones, and legally reviewed refund and proration wording. 5.2 carries the subscription object as the API actually returns it, plus an explicit list of what must not be touched: the billing adapter, the entitlement service. 5.3 turns the surviving scenarios into test cases.'],
- build:['Frontend and backend devs orchestrate; tech lead reviews on booked time.','Agents against the machine-readable spec, inside repo conventions. Scaffolding, glue, mechanical change, variants at volume.','Feature behind a flag, tests passing, review notes recorded.','Screens and states scaffolded from tokens and 5.2 in two days, for what was previously a week. Proration and refund arithmetic written by hand and reviewed twice: money is the one place where plausible is not good enough.'],
- test:['QA owns the definition of correct; automation does the running.','Rule-checkable first: types, lint, unit, accessibility rules. Bug hunting and coverage expansion. Taste and security stay human.','Suite in CI, defects fixed or accepted and documented.','The scenarios run as a suite. Human exploratory testing on the money path and on screen-reader flow, the two places where passing the rules and being right are different things.'],
- release:['PM owns the read; analysis is assisted.','A/B tests, monitoring, analytics, feedback clustering. Cycle time and rework rate, not perceived speed.','Result against hypothesis, guard metrics, decision to expand or hold.','Ten percent rollout. Deflection tracked against the stage 0 guard metrics rather than on its own, because a cancellation flow can post excellent deflection numbers while quietly generating refund complaints.'],
- record:['Tech lead and PM. The stage everyone skips.','What was delegated, what came back wrong, what the review cost. The only stage that makes the next loop cheaper.','Registry entries with outcomes, including the negative ones.','Review hours actual against planned. What came back wrong, what moved down the axis and what did not, and the conventions that go back into the repo file so the next project starts cheaper.']};
+ value:['The product manager decides this one. Nothing here is handed to a tool.','Agree what problem is being solved, for whom, and why now — and whether AI belongs in this piece of work at all. What it will cost, and what would make the team stop, are written down here.','One page: what we believe, the target, the things that must not get worse, the budget, and what would make us stop.','The target — how many cancellations should complete without anyone phoning in — and the regulatory deadline are written down. So are the things that must not get worse while that target is chased: refund complaints, people cancelling then immediately re-subscribing, calls about other subjects going up.'],
+ scope:['Product manager, with the tech lead and the service designer.','Draw the edges of the job: what is being built, who needs it, and — said out loud rather than assumed — what is deliberately not being built.','A short scope note, with the not-building list written down rather than understood.','In: monthly self-service plans. Out: annual, enterprise, partner-billed, and second members on a family plan. The not-building list is written down because otherwise it is the list an AI tool will cheerfully build against later.'],
+ research:['Designers own it; AI only makes the reading faster.','Read what the company already knows: support contacts, past research, how the current process actually works. AI gets through the reading faster, but it cannot supply evidence the company does not have, so what it summarises is checked against the source.','The themes with counts, a map of how cancelling works today, and a list of what is still not known.','Around 8,000 support tickets and call notes were grouped into themes in an afternoon — work that would previously have taken weeks, and so usually gets skipped. Then a researcher read 100 of them by hand to see whether the groups held up: two turned out to be the same complaint worded differently, and one real theme had been split in three.'],
+ probe:['Product designer and content designer, with QA involved this early.','Build rough versions — probes — for the team to argue about: clickable screens generated in hours rather than drawn over days. Then work through the awkward situations the flow has to survive, then put the strongest version in front of real customers. Being wrong at this stage is cheap.','The chosen direction, the situations the flow must handle, what customers did, and the questions legal still has to answer.','Three clickable versions in a day and a half, from prompts. Working through the awkward cases produces 40 situations the flow has to handle: cancelling mid-cycle, a failed last payment, an open billing dispute, a customer locked into a 12-month promotional price, an account already in debt collection. Six sessions with real customers on the second version find five problems no simulated run had.'],
+ decide:['Product manager decides. Tech lead, legal and the service designer are consulted.','Someone decides: carry on, change direction, or stop — and writes down why, including what was rejected and who was in the room. A tool can lay the options out; it cannot own this decision or answer for it in six months.','A short decision record: what was decided, why, what was rejected, who decided it.','The second version proceeds. No retention offer before the cancellation is confirmed — legal risk in one market, trust cost in both — so the offer moves to the confirmation screen instead. The reason is recorded, because in four months somebody will ask why the flow has no save step.'],
+ spec:['Product manager owns coherence. Designers write the team version, product manager and tech lead the tool version, QA the test version.','Write the decision down. The same content can be written for three different readers: the team who build and sell it, the AI tools that generate code from it, and the tests that check what comes back. Whatever is not written down here gets decided later by whoever happens to be typing.','Written documents in the codebase, under version control, reviewed together in one sitting.','For the team: every flow and every state, including the ugly ones, with refund and pro-rata wording a lawyer has read. For the tools: the subscription data exactly as the live system returns it, plus a list of what must not be touched — the billing adapter, the entitlement service. For the tests: the situations that survived stage 3, written as cases that either pass or fail.'],
+ build:['Frontend and backend developers direct the work; the tech lead reviews, on time set aside for it.','Developers point AI at the repetitive parts — screens, wiring, variations — working from whatever was written down at the last stage and following the conventions the codebase already has. Reading back what comes out is part of the job, not an afterthought.','The feature behind a switch, tests passing, and the review notes kept.','Screens and states generated from the design system and the written spec in two days, where the same work took a week before. The refund and pro-rata arithmetic was written by hand and reviewed twice, because money is the one place where an answer that merely looks plausible is not good enough.'],
+ test:['QA owns what counts as correct; automation does the running.','Anything a rule can check gets checked automatically: does it build, does it match the accessibility rules, do the tests pass. The judgement calls stay with people — whether it feels right, whether it is safe, whether the money is correct.','The tests running on every change, and every problem either fixed or written down as accepted.','The situations from stage 3 run automatically on every change. People test by hand in the two places rules cannot help: the money path, and the whole flow on a screen reader.'],
+ release:['Product manager owns the read; AI helps with the analysis.','Release to some customers before all of them, then watch what actually happened against the measures agreed at stage 0. The question is whether the thing worked and how much rework it took — not whether the team felt fast.','The result against what we believed, the things that must not get worse, and a decision to expand or hold.','Released to one customer in ten first. The completion rate is read next to the stage 0 measures rather than on its own, because a cancellation flow can post excellent completion numbers while quietly generating refund complaints.'],
+ record:['Tech lead and product manager. The stage everyone skips.','Write down what was handed to AI, what came back wrong, and how many hours went into reviewing it. This is the one stage that makes the next project cheaper than this one.','Entries recording what happened, including the parts that went badly.','Review hours as they actually landed, against what was planned. What came back wrong, which kinds of work turned out to be worth handing over and which did not, and the conventions that go back into the codebase so the next project starts further along.']};
 const LEVELS=[
- ['thin','Thin annotations','Notes on the designs. No machine-readable contract and no separate test document.'],
- ['human','Human-readable only','5.1 written: flows, states, copy, accessibility requirements. 5.2 and 5.3 not written.'],
- ['triad','Full triad','5.1, 5.2 and 5.3 all written and reviewed together in one sitting.']];
+ ['thin','Notes on the designs','Comments on the design files and a conversation with the developers. Nothing written for the AI tools to build from, and no separate list of what the tests must check.'],
+ ['human','Written up for the team','One document people can read: every flow, every state, the words on screen, the accessibility requirements. Nothing written specifically for the tools or for the tests.'],
+ ['triad','Written for team, tools and tests','Three documents from the same decision, reviewed together in one sitting: one the team reads, one the AI tools build from, one the tests are written from.']];
+/* what a person outside the team would notice about each defect. Invented illustration of the existing
+   table; costs still come from the model, and no sentence states a magnitude. Written in the present
+   tense on purpose: the same sentence has to read correctly whether the problem was caught at its stage
+   or shipped, and only the heading above it knows which. */
+const PLAIN={
+ D1:'A cancellation that works in the demo fails against the real billing service, because the screens were built against a subscription record the live system does not return.',
+ D2:'Accounts in the plan statuses the billing system actually uses fall through the cancellation path, because the generated code invented a status that does not exist.',
+ D3:'A customer cancelling late on the last evening of their billing period is charged for another month.',
+ D4:'Customers part-way through a 12-month promotional price meet a cancellation flow that was never designed for them.',
+ D5:'An account already in debt collection can cancel and drop out of the process chasing the debt.',
+ D6:'The screen and the support team tell customers different things, because nobody decided whether cancelling ends access immediately or at the end of the period already paid for.',
+ D7:'A customer using a screen reader who is interrupted part-way through loses their place and cannot finish cancelling.',
+ D8:'The confirmation wording does not meet the legal requirement in one of the two markets, so it has to be rewritten and reviewed again.',
+ D9:'Behaviour the prototype only pretended to have — a stand-in the build inherited rather than replaced — goes out to customers.'};
 
 /* ---------- state ---------- */
 let state={track:'assisted',stageIndex:0,probesKept:null,specLevel:null,
@@ -340,11 +366,12 @@ function escSeg(escTotal,total,max){
     `title="Escaped to production — ${f1(escTotal)} assumed effort days, paid after release">`+
     (ofMax>=6?`<span>Escaped</span>`:'')+(ofMax>=2.5?`<span>${f1(escTotal)}</span>`:'')+`</div>`;
 }
-function lane(title,rows,max,grey,laneKind,extra){
+function lane(title,rows,max,grey,laneKind,extra,gloss){
   const total=rows.reduce((t,x)=>t+x.total,0), escTotal=rows.reduce((t,x)=>t+x.escPart,0);
   const w=total?total/max*100:0;
-  return `<div class="lane"><div class="lab">${title} · <b>${f1(total)}</b> assumed effort days`+
-    (extra?` · ${extra}`:'')+`</div><div class="rail"><div class="strip${grey?' grey':''}" `+
+  return `<div class="lane"><div class="lab">${title} · <b>${f1(total)}</b> assumed person-days`+
+    (extra?` · ${extra}`:'')+`</div><div class="gl">${gloss}</div>`+
+    `<div class="rail"><div class="strip${grey?' grey':''}" `+
     `style="width:${w}%" role="img" aria-label="${esc(title)}, `+
     rows.map(r=>r.stage.name+' '+f1(r.total-r.escPart)).join(', ')+
     (escTotal?`, escaped to production ${f1(escTotal)}`:'')+`">`+
@@ -406,43 +433,50 @@ function draw(){
   const now=upTo(asst,idx,a), max=scaleMax(a);
   const pending=asst.rows.filter(x=>x.stage.n<=idx&&!x.determined);
   document.getElementById('lanes').innerHTML=
-    lane('Conventional run — fixed reference, unaffected by your choices',convAll.rows,max,true,'conventional',
-      `${convAll.loops} rework loop${convAll.loops===1?'':'s'} · ${convAll.escaped.length} escaped`)+
-    lane('Assisted run — stages 0 to '+idx,now.rows,max,false,'assisted',
-      pending.length?`stage ${pending.map(x=>x.stage.n).join(', ')} not yet costed — choice pending`:'');
+    lane('The way most teams work today',convAll.rows,max,true,
+      'conventional',`${convAll.loops} rework loop${convAll.loops===1?'':'s'} · ${convAll.escaped.length} escaped`,
+      'Discovery, then concept, then a design signed off and handed over to be built, then testing as a phase near '+
+      'the end. This is the same brief delivered the familiar way, and nothing you choose below changes it.')+
+    lane('The AI-assisted run — stages 0 to '+idx,now.rows,max,false,'assisted',
+      pending.length?`stage ${pending.map(x=>x.stage.n).join(' and ')} has no cost yet — the choice above decides it`:'',
+      'The same work in smaller stages, with the decision written down so tools can build against it and checking '+
+      'happening as it goes rather than at the end. This is the run you are walking.');
   drawStage(asst,now);
   drawTally(now,convAll,idx);
   drawRecord(asst,now,convAll,idx);
   document.getElementById('ordering').innerHTML=orderingHolds(a)?'':
-    `<div class="warn"><b>Multiplier ordering no longer holds.</b> One of your edits puts a thinner spec level at or `+
-    `below a fuller one. The figures below are computed from what you entered and have not been corrected. `+
-    `The ordering-dependent expectations — total effort rising as the spec thins, and the thin path landing near `+
-    `the conventional lane — will not apply.</div>`;
+    `<div class="warn"><b>One of your edits has reversed the ordering.</b> Writing less down is now costed as `+
+    `cheaper than writing more at the build, test or review stage. The figures above are computed from exactly `+
+    `what you entered and have not been corrected — but the expectation that writing less makes the run cost `+
+    `more no longer applies, so read them on their own terms.</div>`;
 }
 function drawStage(asst,now){
   const s=ASSISTED_STAGES[state.stageIndex], [owner,what,out,story]=COPY[s.key];
   const row=asst.rows[state.stageIndex];
   let h=`<div class="panel"><div class="shead"><span class="n">${s.n}</span><h3>${esc(s.name)}</h3>`+
-    `<span class="dur">${row.determined?f1(row.total)+' assumed effort days':'not yet costed'}</span></div>`+
+    `<span class="dur">${row.determined?f1(row.total)+' assumed person-days':'no cost yet'}</span></div>`+
     `<p class="owner">${esc(owner)}</p><p>${esc(what)}</p>`+
     `<div class="out"><b>On this brief</b>${esc(story)}</div>`+
-    `<div class="out"><b>Out</b>${esc(out)}</div>`;
+    `<div class="out"><b>What this stage produces</b>${esc(out)}</div>`;
   if(row.found.length){
-    h+=`<div class="found"><b>Surfaced at this stage</b><ul>`+row.found.map(x=>{
+    h+=`<div class="found"><b>${row.found.some(x=>x.caught===PROD_STAGE)
+      ?'Nobody caught these before release · what customers met'
+      :'Caught at this stage · what it would have done'}</b><ul>`+
+      row.found.map(x=>{
       const escaped=x.caught===PROD_STAGE;
-      return `<li>${x.d.id} — ${esc(x.d.label)}. Introduced at stage ${x.d.introducedAt}, `+
-        (escaped?`found in production`:`found here`)+
-        `, assumed cost ${f1(state.assumptions.defectBaseCost*state.assumptions.catchCostMultiplier[x.caught])} days`+
+      return `<li>${esc(PLAIN[x.d.id])}<div class="note">${x.d.id} · ${esc(x.d.label)} · created at stage `+
+        `${x.d.introducedAt}, ${escaped?'nobody caught it before release':'found at this stage'}, `+
+        `assumed cost ${f1(state.assumptions.defectBaseCost*state.assumptions.catchCostMultiplier[x.caught])} days`+
         (x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE?`, plus one rework loop reopening stage `+
           `${x.d.introducedAt} ${esc(introducedIn(x.d,'assisted').name)}`:'')+
-        `.${NO_CONVENTIONAL[x.d.id]?' '+esc(NO_CONVENTIONAL[x.d.id]):''}</li>`;
+        `.${NO_CONVENTIONAL[x.d.id]?' '+esc(NO_CONVENTIONAL[x.d.id]):''}</div></li>`;
     }).join('')+`</ul></div>`;
   }
-  if(state.stageIndex===DECIDE_STAGE) h+=choiceBlock('Three clickable variants exist from stage 3, built from prompts in a day and a half.',[
-    ['probe','keep','Keep the prototype','The variant that looks nearest to finished stays in the repository and the build starts from it.'],
-    ['probe','delete','Delete the probes','All three variants are discarded once the direction is chosen. Nothing from them enters the repository.']],
+  if(state.stageIndex===DECIDE_STAGE) h+=choiceBlock('The direction is chosen, and the build starts next. What happens to the three clickable versions built at stage 3?',[
+    ['probe','keep','Keep the prototype','The version closest to finished stays in the codebase, and the build starts from it rather than from an empty file.'],
+    ['probe','delete','Delete the prototypes','All three are thrown away now the direction is settled. The build starts from the written spec and the design system instead.']],
     state.probesKept===null?null:(state.probesKept?'keep':'delete'));
-  if(state.stageIndex===SPEC_STAGE) h+=choiceBlock('How completely is the decision written down before stage 6 starts?',
+  if(state.stageIndex===SPEC_STAGE) h+=choiceBlock('Before anyone starts building: how much of the decision gets written down? Each option takes a different amount of time here, and changes what stages 6 and 7 have to work from.',
     LEVELS.map(l=>['spec',l[0],l[1],l[2]]),state.specLevel);
   const blocked=blockReason();
   h+=`<div class="controls"><button type="button" data-act="back" ${state.stageIndex===0?'disabled':''}>Back</button>`+
@@ -458,27 +492,28 @@ function choiceBlock(prompt,opts,current){
 }
 function blockReason(){
   if(state.stageIndex===DECIDE_STAGE&&state.probesKept===null)
-    return 'Next is blocked: stage 4 is a decision, and it has not been made.';
+    return 'Next is blocked: stage 4 is a decision. Choose one of the two above.';
   if(state.stageIndex===SPEC_STAGE&&state.specLevel===null)
-    return 'Next is blocked: the spec level has not been chosen, so stages 6 and 7 cannot be costed.';
+    return 'Next is blocked: until you choose what gets written down, building and testing have nothing to be costed against.';
   return null;
 }
 function drawTally(now,convAll,idx){
-  const t=[['Effort',f1(now.effort),'assumed person-days · conventional '+f1(convAll.effort)],
-    ['Calendar',f1(now.calendarDays),'assumed days'],
-    ['Review',f1(now.reviewHours),'assumed hours'],
-    ['Defects surfaced',String(now.found.length-now.escaped.length),'found and resolved by stage '+idx],
-    ['Escaped',String(now.escaped.length),'escaped to production'],
-    ['Rework loops',String(now.loops),'fired so far']];
+  const t=[['Team time',f1(now.effort),'assumed person-days · the familiar way, whole run: '+f1(convAll.effort)],
+    ['Elapsed time',f1(now.calendarDays),'assumed working days, team members working in parallel'],
+    ['Senior review',f1(now.reviewHours),'assumed hours spent reading back what was produced'],
+    ['Problems found',String(now.found.length-now.escaped.length),'found and fixed inside the run, by stage '+idx],
+    ['Reached customers',String(now.escaped.length),'escaped to production before anyone caught them'],
+    ['Stages reopened',String(now.loops),'rework loops fired so far']];
   document.getElementById('tally').innerHTML=t.map(([k,v,s])=>
     `<div class="tile"><span class="lab">${esc(k)}</span><span class="big">${v}</span>`+
     `<span class="sub">${esc(s)}</span></div>`).join('');
   document.getElementById('tallynote').textContent=
-    `Every figure is assumed, not measured. Conventional reference for the whole run: `+
-    `${f1(convAll.effort)} effort days, ${f1(convAll.calendarDays)} calendar days, `+
-    `${f1(convAll.reviewHours)} review hours, ${convAll.escaped.length} escaped, `+
-    `${convAll.loops} rework loop${convAll.loops===1?'':'s'}. `+
-    `Defects introduced earlier than the stage that catches them are not counted until they surface.`;
+    `Every figure is assumed, not measured. The same brief delivered the familiar way, for the whole run: `+
+    `${f1(convAll.effort)} person-days, ${f1(convAll.calendarDays)} working days, `+
+    `${f1(convAll.reviewHours)} review hours, ${convAll.escaped.length} problems reaching customers, `+
+    `${convAll.loops} stage${convAll.loops===1?'':'s'} reopened. `+
+    `A problem costs nothing until the stage that finds it, which is why these numbers can look calm for `+
+    `several stages and then move sharply.`;
 }
 function drawRecord(asst,now,convAll,idx){
   const wrap=document.getElementById('recordwrap');
@@ -488,56 +523,68 @@ function drawRecord(asst,now,convAll,idx){
   const rows=asst.defs.slice().sort((x,y)=>x.d.id<y.d.id?-1:1).map(x=>{
     const cost=a.defectBaseCost*a.catchCostMultiplier[x.caught];
     const rw=x.caught>=BUILD_STAGE&&x.d.introducedAt<=SPEC_STAGE;
-    return `<tr><td class="n">${x.d.id}</td><td>${esc(x.d.label)}`+
-      (NO_CONVENTIONAL[x.d.id]?`<div class="note">${esc(NO_CONVENTIONAL[x.d.id])}</div>`:'')+
-      `</td><td class="n">${x.d.introducedAt}</td>`+
-      `<td class="n">${x.caught===PROD_STAGE?'production':x.caught}</td>`+
+    return `<tr><td class="n">${x.d.id}</td><td>${esc(PLAIN[x.d.id])}<div class="note">${esc(x.d.label)}.`+
+      (NO_CONVENTIONAL[x.d.id]?' '+esc(NO_CONVENTIONAL[x.d.id]):'')+
+      `</div></td><td class="n">stage ${x.d.introducedAt}</td>`+
+      `<td class="n">${x.caught===PROD_STAGE?'after release':'stage '+x.caught}</td>`+
       `<td class="n">${f1(cost+(rw?a.reworkLoopCost:0))}${rw?' incl. rework':''}</td></tr>`;
   }).join('');
+  const fixed=now.found.length-now.escaped.length, gap=now.effort-convAll.effort;
+  const uniq=asst.defs.filter(x=>NO_CONVENTIONAL[x.d.id]).length;
+  const said=(n,cap)=>n===0?(cap?'No':'no')+' problems':n===1?'1 problem':n+' problems';
   document.getElementById('record').innerHTML=
-    `<table><thead><tr><th>Id</th><th>Defect</th><th>Introduced</th><th>Caught</th>`+
+    `<p class="sum">You ${state.probesKept?'kept the prototype':'deleted the prototypes'} at stage 4, and at stage 5 `+
+    `you wrote ${esc({thin:'notes on the designs',human:'a write-up for the team',
+      triad:'documents for the team, the tools and the tests'}[state.specLevel])}. `+
+    `${said(fixed,1)} ${fixed===1?'was':'were'} found and fixed inside the run, and `+
+    `${said(now.escaped.length)} reached customers. This run comes to ${f1(now.effort)} assumed person-days `+
+    `against ${f1(convAll.effort)} for the same brief delivered the familiar way — `+
+    `${Math.abs(gap)<1?'effectively level with it':f1(Math.abs(gap))+' person-days '+(gap<0?'fewer':'more')}. `+
+    `Both ways of working produce problems. What your two choices changed is when each one was found, and what `+
+    `it had cost by the time it was.</p>`+
+    `<table><thead><tr><th>Id</th><th>The problem, in plain terms</th><th>Created at</th><th>Found at</th>`+
     `<th>Assumed cost, days</th></tr></thead><tbody>${rows}</tbody></table>`+
-    `<p class="note">Path taken: probes ${state.probesKept?'kept':'deleted'}, spec `+
-    `${esc(LEVELS.find(l=>l[0]===state.specLevel)[1].toLowerCase())}. `+
-    `Both paths produce defects; the difference is only where they are caught, and defects the chosen spec `+
-    `level catches cheaply are listed here alongside the expensive ones.</p>`+
-    `<p class="note">Assisted run ${f1(now.effort)} assumed effort days; conventional reference `+
-    `${f1(convAll.effort)}. The difference is deliberately not stated as a percentage: it moves by more `+
-    `than twenty points on the escape count alone. Escaped to production: `+
-    `${now.escaped.length} against ${convAll.escaped.length}. Rework loops: ${now.loops} against ${convAll.loops}. `+
-    `Review hours: ${f1(now.reviewHours)} against ${f1(convAll.reviewHours)}.</p>`+
-    (asst.defs.some(x=>x.caught<SPEC_STAGE)?`<p class="note">Where cheap catches are attributed: the spec level chosen at stage 5 decides `+
-      `how completely stage 3's output was written down, so a defect the triad catches at stage 3 is costed there.</p>`:'');
+    `<p class="note">Everything the run produced is listed, including anything your choices caught early and `+
+    `cheaply. ${uniq===1?'One of them happens':uniq+' of them happen'} only on this route and not on the familiar `+
+    `one; the notes say which and why. `+
+    `The difference in totals is deliberately not given as a percentage — it moves by more than twenty points on `+
+    `the number of problems reaching customers alone. Reached customers: `+
+    `${now.escaped.length} against ${convAll.escaped.length}. Stages reopened: ${now.loops} against `+
+    `${convAll.loops}. Review hours: ${f1(now.reviewHours)} against ${f1(convAll.reviewHours)}.</p>`+
+    (asst.defs.some(x=>x.caught<SPEC_STAGE)?`<p class="note">Why some problems are found before stage 5 even `+
+      `though the choice is made there: what you chose decides how completely stage 3's work was written down, `+
+      `so a problem that writing it down would have exposed at stage 3 is costed at stage 3.</p>`:'');
 }
 
 /* ---------- assumptions panel ---------- */
 const FIELDS=[
-  ['Cost model',null,null],
-  ['assumptions.defectBaseCost','Defect base cost, days',0.1],
-  ['assumptions.reworkLoopCost','Rework loop cost, days',0.5],
-  ['assumptions.reviewHoursPerBuildDay','Review hours per build day',0.1],
-  ['assumptions.calendarFromEffort','Calendar days per effort day',0.01],
-  ['Catch cost multiplier, by stage caught',null,null],
+  ['What a problem costs',null,null],
+  ['assumptions.defectBaseCost','Base cost of one problem, days',0.1],
+  ['assumptions.reworkLoopCost','Cost of reopening a finished stage, days',0.5],
+  ['assumptions.reviewHoursPerBuildDay','Review hours per day of build or test',0.1],
+  ['assumptions.calendarFromEffort','Working days per person-day, team in parallel',0.01],
+  ['How much more a problem costs, depending on when it is found',null,null],
   ['assumptions.catchCostMultiplier.3','Stage 3',1],['assumptions.catchCostMultiplier.4','Stage 4',1],
   ['assumptions.catchCostMultiplier.5','Stage 5',1],['assumptions.catchCostMultiplier.6','Stage 6',1],
-  ['assumptions.catchCostMultiplier.7','Stage 7',1],['assumptions.catchCostMultiplier.8','Production',1],
-  ['Spec stage effort, days',null,null],
-  ['assumptions.specEffort.thin','Thin',0.5],['assumptions.specEffort.human','Human-readable',0.5],
-  ['assumptions.specEffort.triad','Triad',0.5],
-  ['Spec level multipliers',null,null],
-  ['assumptions.specMultipliers.thin.build','Thin · build',0.05],
-  ['assumptions.specMultipliers.thin.test','Thin · test',0.05],
-  ['assumptions.specMultipliers.thin.reviewRate','Thin · review rate',0.05],
-  ['assumptions.specMultipliers.human.build','Human · build',0.05],
-  ['assumptions.specMultipliers.human.test','Human · test',0.05],
-  ['assumptions.specMultipliers.human.reviewRate','Human · review rate',0.05],
-  ['assumptions.specMultipliers.triad.build','Triad · build',0.05],
-  ['assumptions.specMultipliers.triad.test','Triad · test',0.05],
-  ['assumptions.specMultipliers.triad.reviewRate','Triad · review rate',0.05]];
+  ['assumptions.catchCostMultiplier.7','Stage 7',1],['assumptions.catchCostMultiplier.8','After release',1],
+  ['Days spent writing it down, by option',null,null],
+  ['assumptions.specEffort.thin','Notes on the designs',0.5],
+  ['assumptions.specEffort.human','Written up for the team',0.5],
+  ['assumptions.specEffort.triad','Written for team, tools and tests',0.5],
+  ['What each option does to build, test and review time',null,null],
+  ['assumptions.specMultipliers.thin.build','Notes · build time ×',0.05],
+  ['assumptions.specMultipliers.thin.test','Notes · test time ×',0.05],
+  ['assumptions.specMultipliers.thin.reviewRate','Notes · review time ×',0.05],
+  ['assumptions.specMultipliers.human.build','Team write-up · build time ×',0.05],
+  ['assumptions.specMultipliers.human.test','Team write-up · test time ×',0.05],
+  ['assumptions.specMultipliers.human.reviewRate','Team write-up · review time ×',0.05],
+  ['assumptions.specMultipliers.triad.build','All three · build time ×',0.05],
+  ['assumptions.specMultipliers.triad.test','All three · test time ×',0.05],
+  ['assumptions.specMultipliers.triad.reviewRate','All three · review time ×',0.05]];
 function stageFields(){
-  return [['Assisted stage base effort, days',null,null]]
+  return [['AI-assisted run · days per stage before any problems',null,null]]
     .concat(ASSISTED_STAGES.map((s,i)=>['stage.a.'+i,s.n+' '+s.name,0.5]))
-    .concat([['Conventional phase base effort, days',null,null]])
+    .concat([['The familiar way · days per phase before any problems',null,null]])
     .concat(CONVENTIONAL_PHASES.map((s,i)=>['phase.c.'+i,s.n+' '+s.name,0.5]));
 }
 function getPath(p){
@@ -553,16 +600,16 @@ function setPath(p,v){
   const keys=seg.slice(1);
   keys.slice(0,-1).reduce((o,k)=>o[k],state.assumptions)[keys[keys.length-1]]=v;
 }
-const DIALS=[['assumptions.catchCostMultiplier.8','Production multiplier',1],
-             ['assumptions.defectBaseCost','Defect base cost, days',0.1]];
+const DIALS=[['assumptions.catchCostMultiplier.8','Cost multiplier when a customer finds it',1],
+             ['assumptions.defectBaseCost','Base cost of one problem, days',0.1]];
 function field(p,label,step,pre){
   return `<div class="f"><label for="${pre}-${p}">${esc(label)} · assumed</label>`+
     `<input id="${pre}-${p}" type="number" lang="en" min="0" step="${step}" data-path="${p}" value="${getPath(p)}"></div>`;
 }
 function buildPanel(){
   document.getElementById('dials').innerHTML=DIALS.map(([p,l,st])=>field(p,l,st,'d')).join('')+
-    `<p class="hint">These two set the price of an escaped defect, which is the largest single lever on `+
-    `every figure above. Both are assumed.</p>`;
+    `<p class="hint">These two set the price of a problem that reaches a customer, which is the largest single `+
+    `lever on every figure above. Both are assumed.</p>`;
   document.getElementById('fields').innerHTML=FIELDS.concat(stageFields()).map(([p,label,step])=>
     label===null?`<div class="grp">${esc(p)} · assumed</div>`:
     `<div class="f"><label for="i-${p}">${esc(label)}</label>`+
@@ -600,10 +647,11 @@ function announce(){
   document.getElementById('live').textContent=`Stage ${s.n} of ${LAST_STAGE}, ${s.name}.`;
 }
 document.getElementById('limits').textContent=
-  'Known limitations. Every number here is invented; none of it is observation. The defect table is a '+
-  'reconstruction rather than a record. Both lanes assume existing tests, a design system and a documented '+
-  'domain; without those the assisted lane would be slower, and this model does not represent that case. '+
-  'A simulation of AI benefits, built with AI, argues in a circle — only a recorded run on real work settles it.';
+  'What this cannot tell you. Every number here was invented by us; none of it was observed. The list of problems '+
+  'is a plausible reconstruction, not a record of anything that happened. Both runs assume the team already has '+
+  'tests, a design system and documented systems to work from — without those, the AI-assisted run would be '+
+  'slower, and this page does not show that case. And a simulation of what AI is worth, built with AI, argues in '+
+  'a circle: only a real project, recorded honestly, settles it.';
 buildPanel();
 render();
 announce();
