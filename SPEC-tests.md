@@ -32,7 +32,7 @@ Criteria are written as invariants rather than fixed totals, because the assumpt
 | B2 | Back preserves both choices; Reset clears both and returns to stage 0 while keeping edited assumptions. |
 | B3 | Defects introduced at stage 3 are not visible in the tally or the lane until the stage where they are caught. |
 | B4 | Choice prompts contain no evaluative language. A reader must not be able to infer the recommended option from the button labels or the surrounding copy. |
-| B5 | The conventional lane is fully rendered from load and never changes in response to viewer choices. |
+| B5 | The conventional lane's **strip** is fully rendered from load and shows the whole run at every moment. Its **narrative and figures** depend on position in the walkthrough and on nothing else — never on either choice. Amended when the tally began showing both runs at the equivalent point: the original wording said "never changes", which conflated two promises and became untrue of one of them. The substance is unchanged — no part of the conventional lane responds to `probesKept` or `specLevel` — and G3 is the check. |
 | B6 | Stage 9 record lists defects for the path actually taken, including any caught cheaply, not only the expensive ones. |
 
 ## C. Assumptions panel
@@ -81,6 +81,20 @@ anything to someone who has not read this document set. These do.
 | F4 | Stage 9 states in sentences, before the table, what was chosen, what came back, and how the totals compare — and reads equally flat when the assisted run is the more expensive one. |
 | F5 | No copy states a magnitude. Every figure is one assumption edit away from changing, so copy names the assumption, never its current value. (§11 found this class; it applies to all narrative copy, not only the two definitions it was found in.) |
 | F6 | B4 holds across all copy, not only the button labels: no label, prompt, description, or consequence sentence lets a reader infer which option is recommended, and the options stay parallel in length and register. |
+
+## G. The two runs side by side
+
+Added when the conventional run gained a narrative of its own, so the differences between the two
+processes could be read rather than inferred from bar widths.
+
+| # | Criterion |
+|---|---|
+| G1 | `ALIGN` covers every assisted stage and every conventional phase exactly once. Handoff is included and attributed to Specify. No phase is orphaned and no stage has an empty column. |
+| G2 | The conventional figures are monotonic across the walkthrough and, at stage 9, equal the whole-run totals exactly — effort, calendar, review, found, escaped and loops alike. Anything less means part of that run is not being counted. |
+| G3 | The conventional column's rendered text is byte-identical across all six choice paths at every stage. This is the automatable half of B5 and it is a script, not a reading. |
+| G4 | Each column states where its narrative comes from, on screen, under the column heading. The conventional column is marked as a reconstruction wherever it appears. |
+| G5 | Conventional escapes appear at Release, not at Retrospective — in the story column and in the tally alike. If the two regions disagree about when a problem reached a customer, one of them is lying. |
+| G6 | No copy in either column states a count, a duration or a magnitude the model computes. The panels describe how the work goes; the numbers come from the model and appear once. |
 
 Neither F1 nor F6 can be automated into a pass or fail. The check for both is to read the page top to
 bottom as though presenting to someone who has never seen the doc set, and list every sentence that would

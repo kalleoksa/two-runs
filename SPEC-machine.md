@@ -105,6 +105,29 @@ arrow destination only; the rework predicate keeps using the shared `introducedA
 
 `conventionalCaughtAt: null` means the defect does not occur in the conventional run at all — D2 is a generated-output failure mode with no human equivalent, D9 requires a high-fidelity probe. State this in the UI where those defects appear; it is a point in the conventional method's favour and must not be hidden.
 
+## Alignment between the two lists
+
+Both runs are narrated side by side at the same point in the story, so each assisted stage names the
+conventional phase doing the same kind of work. Written out rather than derived from `kind` at render
+time — the two lists number different things, and an implicit mapping is a claim nobody signed off, which
+is the lesson `conventionalIntroducedAt` was added for.
+
+```js
+const ALIGN = { 0:[1], 1:[1], 2:[1], 3:[2], 4:[2], 5:[3,4], 6:[5], 7:[6], 8:[7], 9:[8] };
+```
+
+Phase `4` Handoff has no assisted counterpart and sits with Specify, where the two routes diverge — one
+writes the decision down for three readers, the other finishes a design and hands it over. Where several
+assisted stages map to one phase, the phase says which ones.
+
+**Escapes and the number 8.** `caughtAt: 8` means escaped to production. On the assisted list stage 8 is
+`Release & measure`, a real stage; on the conventional list phase 8 is `Retrospective`, which is not where
+a customer meets anything. Conventional escapes are therefore *displayed* on phase 7 `Release`, so both
+routes reveal what reached customers at the same step, and the running tally must apply the same rule —
+the escaped defects' cost counts from Release, the retrospective's own work does not. The stored data is
+unchanged; this is a display rule, and if the two regions disagree the score contradicts the panel beside
+it.
+
 ```js
 const DEFAULT_ASSUMPTIONS = {
   specMultipliers: {            // applied to build and test stage effort
@@ -141,6 +164,26 @@ escaped                = defects whose caughtStage === 8
 The conventional lane uses the same functions with `conventionalCaughtAt`, no spec multipliers, and its own phase list. Compute it once at load.
 
 Totals must be recomputed from assumptions on every render. No caching, no incremental accumulation — the assumptions panel changes numbers mid-run and everything downstream must follow.
+
+## Narrative copy, and where it comes from
+
+Two tables of presentation copy, four fields each — who owns it, what the step is, what it produces, what
+happened on this brief. `COPY` for the assisted stages, `CONV_COPY` for the conventional phases. Neither
+is model data; neither may state a magnitude, a count, or anything the model already computes, or the copy
+goes stale the moment an assumption is edited or contradicts the figure next to it.
+
+Their provenance differs, and the screen says so rather than letting a reader assume parity:
+
+- `COPY` — stage names, ownership and outputs come from `reference/ai-process-spine.html`; the
+  brief-specific detail comes from `reference/ai-worked-example.html`. Wording is written for a
+  first-time reader rather than lifted.
+- `CONV_COPY` — **authored, not sourced.** There is no conventional-run document in the input set. Four
+  phases have anchors used for their substance only, never their durations, which are on a different
+  scale from the phase table and would contradict it: Discovery and Build from the worked example's
+  "previously" comparisons, Concept from its statement that generating candidate states was "previously
+  not available at any price", Retrospective from the spine's statement that the question exists today as
+  a template field. Design to spec, Handoff, QA phase and Release are invented. Evidence about the
+  assisted run must not be transplanted onto this one.
 
 ## Interaction contract
 

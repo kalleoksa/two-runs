@@ -17,6 +17,12 @@ Reference files, for matching rather than reading closely:
 - `reference/ai-worked-example.html` — visual reference for the segment bars, stage blocks, and typographic treatment. Match it; do not redesign it.
 - `reference/ai-process-spine.html` — source for stage names, ownership lines, and what each stage produces.
 
+Neither reference file describes the conventional run. The conventional phases' narrative is authored, not
+sourced: four phases have anchors in the reference files, used for their substance and never their
+durations, and the rest is invented. Evidence about the assisted run must never be transplanted onto the
+conventional one — that error, and why it was declined once already, is recorded in `BUILD-LOG.md` §14.
+The screen says which column is a reconstruction; keep it saying so.
+
 The reference governs the visual treatment, the stage names, and the substance of each stage — not the
 wording of the descriptions. That wording was reused verbatim until the owner reported the artifact read
 as too technical for a stakeholder to follow, and it was the reference copy, written for people who had
