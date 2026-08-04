@@ -1118,3 +1118,153 @@ recorded the opposite.
 - Whether the four invented phases describe anything a team would recognise. They are mine, they are
   marked as mine, and the person to correct them is someone who has delivered this way.
 - Human review time. Still not reported.
+
+---
+
+## 18. A run sheet, and the crossover said out loud
+
+First feedback from someone outside the project — the check §16 and §17 both asked for and could not
+perform. It arrived in Finnish and is worth quoting rather than paraphrasing:
+
+> *"Tää on tosi hyvä! Selkeä toi rinnakkain juoksutus ja hyvät huomiot eri vaiheissa. Saako tästä lopulta
+> irti jonkinlaisen check listin, jolla pystyisi varmistamaan noita vaiheita ja valintoja? Erityisesti, kun
+> tekee ensimmäistä kertaa, se voisi olla hyödyllistä."*
+>
+> Asked what kind: *"Jonkunlainen työkalu prosessin juoksuttamiseen?"* — *"Joo, jotain sellaista, että ota
+> tämä huomioon, niin säästät aikaa/vaivaa seuraavassa vaiheessa tms."*
+>
+> *"Tää tosi hyvin tekee siitä näkyvää, että valinnoilla on vaikutusta seuraavaan vaiheeseen ja
+> työmäärään. Ja 'valitsemalla väärin' saattaa AI versiosta tulla kalliimpi/hitaampi kuin ns. vanhalla
+> tavalla työskentelemällä."*
+
+Two things in that, and both are firsts.
+
+**The side-by-side layout passed the test I said I could not run.** §17 recorded that I could not judge
+whether two columns made the comparison easier or merely doubled the reading. A reader outside the document
+set says clearly: *selkeä* — clear, with the per-stage observations landing. That closes the open question
+from §17 in the affirmative, and it is the only entry in this log where an open question was closed by
+someone other than me.
+
+**And the artifact's hardest finding was reached unaided.** *"Valitsemalla väärin saattaa AI versiosta
+tulla kalliimpi/hitaampi"* is exactly what §14 and §15 fought over and what the paired tally exposed in
+§17 — a reader got there from the totals with nobody pointing at it. That is the strongest evidence in this
+log that the thing communicates, stronger than any criterion could be, because it was not prompted.
+
+### What the ask actually was, and the rule it broke
+
+Not a summary. A *tool for running the process* — imperative, usable on a real project, of the form "do
+this now and the next stage costs less". The artifact could not become that without breaking its own rules:
+`SPEC-machine.md`'s forbidden list bars copy that recommends anything, and B4 requires that a reader cannot
+infer which option is preferred. A hedged checklist is not a checklist.
+
+Put to the owner as four decisions, all four answered before any code changed. The one that mattered: the
+run sheet becomes a **separate file with its own rule.** `checklist.html` may instruct; `demo.html` may
+not. The boundary runs between the two files rather than inside one, and it is written into `CLAUDE.md`,
+`SPEC-human.md` and `SPEC-machine.md` so the next change does not quietly blur it — with H7 added to make
+it checkable: *the demo gives no instructions and the run sheet carries no figures.*
+
+### `checklist.html`
+
+Thirty items across ten stages, two decision boxes, no script at all. Every item either cites the problem
+it prevents by the id `demo.html` uses, or is marked **authored** — practice the model does not encode, and
+therefore the first thing a reader should argue with. The split came out at 14 defect citations across 30
+items; the other 16 are authored, which is a fair account of how much of "how to work well" this model
+actually contains.
+
+Three decisions in it worth recording:
+
+- **No figures at all.** Not even the ones the model computes. A sheet gets printed and read months later
+  by someone who was not there when an assumption was edited, so any number on it is a latent lie. This is
+  §11's rule taken to its conclusion — and it made the sheet better, because "expect the catches to move
+  later" is more useful to a first-timer than a multiplier.
+- **Stage 0 says it prevents nothing.** Nothing in the defect list is prevented by writing a hypothesis
+  down. The honest note is that the stage buys the ability to stop, which the model does not price. Padding
+  it would have been easy and would have been the first lie on the page.
+- **The decision boxes are conditionals, not verdicts.** "If you keep a prototype, then list every stand-in
+  in it and replace them before release." A real team may legitimately keep one; the sheet has to be usable
+  by them. The only flat assertion is that keeping one *without* a list of what in it was fake is not
+  defensible.
+
+It also carries a gap the model has and the sheet should not: stage 7 tells the reader to record a problem
+they accepted rather than fixed, and says outright that the demo's model has no category for that — §14's
+"found and accepted", still logged and unbuilt. The sheet is where that omission stops being invisible.
+
+### The crossover, in the demo, computed
+
+`crossover()` compares all six paths against the conventional total on every render and names the ones
+above it. Under the defaults, two of six — notes-only with the prototypes deleted, and notes-only with one
+kept. Phrased as what it is: *whether AI is faster here is not a property of AI; it is a property of these
+numbers, and you can change all of them.*
+
+Hardcoding "two of six" would have been the same latent bug as §11's magnitudes and §16's "two of the
+nine", so it is computed. Verified under three regimes: defaults (2 of 6), every specification cost raised
+until all six cross (reads "every one of the six"), and escapes made cheap until none do.
+
+### Found in my own output, twice, by reading it
+
+Neither was caught by a criterion. Both were caught by reading rendered text against the model, which is
+now the third round in a row where that is the method that works.
+
+1. **The stage 9 block credited the wrong spec level.** For each problem that reached customers it named
+   the level that catches it earlier — picked with a `reduce` that returned the *strictly earliest* match in
+   key order, which is the fullest level. `D2`, `D3` and `D7` are caught at the same stage by the team
+   write-up as by all three documents, and the block was crediting all three. It overstated what the reader
+   would have to do, in the direction that flatters the process the artifact demonstrates. Fixed to report
+   the **thinnest level that achieves the earliest catch**, which is both accurate and less flattering.
+2. **The level names were about to exist twice.** The record summary had them inline; the new block needed
+   the same three strings. Two copies of the same prose in one file is the drift risk that
+   `conventionalIntroducedAt` (§14), `ALIGN` (§17) and H3 all exist to prevent. Hoisted to `LVL_PLAIN`
+   before the second copy was written rather than after.
+
+### Invented — not in any spec
+
+- The thirty checklist items, 16 of them authored practice with nothing behind them but judgement. The
+  three most load-bearing: book the review time as calendar time before the build starts; keep the money
+  arithmetic human; ask which states nobody in the room has met, then look in the data rather than in the
+  team's memory.
+- `crossover()`, `checklistBlock()`, `LVL_PLAIN`, the `.ckb` block, `a{color:var(--cheap)}` — the first
+  link the demo has ever contained.
+- Section H in `SPEC-tests.md`, seven criteria, of which H7 is the only one that polices a boundary
+  between two files rather than a property of one.
+
+### A criterion that was wrong on first writing
+
+H7 — *the demo gives no instructions* — failed on its own first run, and the fault was the criterion rather
+than the artifact. Grepping for imperative verbs flagged all ten stage descriptions, because they are
+written in the mood the process documents use: *agree what problem is being solved*, *draw the edges of the
+job*, *write the decision down*. Those describe what a stage consists of. They do not tell the viewer what
+to do about their own choices, which is the boundary that actually matters.
+
+Sharpened to grep for second-person prescription instead — "you should", "make sure", "we recommend", "you
+need to" — and re-run: none in the demo. Two further passes were needed even then, because "always" and
+"never" turned out to be noise rather than signal: *"a flow that was never designed for them"*, *"never in
+response to either of your choices"*. All descriptive. Recorded because it is the third criterion in this
+build (after A3, then G2) that had to be rewritten once it met the thing it was supposed to check, and
+because a criterion that fires on correct work is worse than no criterion — it trains you to ignore it.
+
+### Verified
+
+`demo.html` 783 lines against the 800 cap — **17 lines of headroom, and the next content addition of any
+size needs the budget revisited rather than absorbed.** `checklist.html` 311 lines. Model totals
+byte-identical across all six paths, diffed against the baseline captured before §16. Full suite: A, B, C,
+D, E, F, G, H. H1: 30 of 30 items carry provenance. H2: grep for days, hours, multipliers and percentages
+in the sheet returns nothing. H3 by script: stage numbers and names match `ASSISTED_STAGES` exactly, all 14
+cited ids and label tags match `DEFECTS`, and every one of the nine problems is cited somewhere. H5: no
+script, no network, no storage. H6 under three assumption regimes. No console or page errors.
+
+**H4 is a partial pass and the reason is worth stating.** No PDF renderer exists in this container, so I
+could not read the printed pages. Chromium's own text extraction returned only ligature glyph names from
+the subset fonts. Instead: print media emulated at A4 content width, every block measured, tallest is 409px
+against a 1016px printable page, and `break-inside:avoid` confirmed as computed rather than merely written.
+That is a geometric argument that nothing *can* split, not an observation that nothing *did*.
+
+### What was not checked
+
+- **The printed sheet, on paper.** See above. The geometry says it holds; nobody has held it.
+- **Whether the authored items are any good.** Sixteen items of practice advice with the model behind none
+  of them. They are marked, which is honesty rather than validation. The person to correct them has
+  delivered a project this way and has not read these documents.
+- Any real device, iOS Safari, or either deployed page.
+- Screen reader on the run sheet — the checkboxes are CSS pseudo-elements on list items, which read as a
+  plain list, and that is probably right, but it is unverified by ear.
+- Human review time. Still not reported, eighteen sections in.

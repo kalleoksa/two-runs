@@ -72,6 +72,31 @@ persuasive: the escaped-defect sentences must not be written in a more alarming 
 caught-defect ones, and no sentence may state a magnitude, because every magnitude on this page is one
 edit away from being false.
 
+## The run sheet, and why it is a separate file
+
+`checklist.html` exists because a test user who understood the demo immediately asked for something the
+demo cannot be: *"Saako tästä lopulta irti jonkinlaisen check listin, jolla pystyisi varmistamaan noita
+vaiheita ja valintoja? Erityisesti, kun tekee ensimmäistä kertaa."* A tool for running the process, not a
+demonstration that the process matters.
+
+It is a separate file because it needs a rule this document forbids. Everything here insists the simulation
+must not advise — the reader must reach their own conclusion, and B4 exists to keep the choices open. A
+checklist is the opposite: it is advice, in imperative voice, and hedging it into neutrality would make it
+useless to the person who asked. So the boundary runs between the files rather than inside one:
+
+- **The demo reports.** What a stage cost, where a problem was caught, what the totals came to. No
+  imperatives, including in the block at stage 9 that lists what the run would put on a checklist — that
+  block states what the model catches and where, and stops.
+- **The run sheet instructs.** Imperative voice, one item per thing to do, each naming what it prevents.
+  It carries no figures at all: no days, no hours, no multipliers, nothing an assumption could change,
+  because it will be read on paper long after somebody edited the model.
+
+Two further rules keep it honest. Every item either cites the problem it prevents by the id the demo uses,
+so a reader can go and see where that problem was caught and what it was priced at, or is marked
+*authored* — practice the model does not encode, and therefore the first thing to argue with. And where a
+stage prevents nothing in the model at all, the sheet says so rather than padding it: stage 0 buys the
+ability to stop, which the model does not price.
+
 ## Out of scope
 
 No model calls, no backend, no persistence, no build step. No multi-scenario library. No editing the stage or defect model in the interface — that is done in the source. Desktop only; this is a presentation artifact.

@@ -57,6 +57,10 @@
   .out+.out{margin-top:8px}
   .out b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
          color:var(--ink-soft);display:block;margin-bottom:3px}
+  a{color:var(--cheap)}
+  .ckb{border:1px solid var(--rule);padding:10px 12px;margin:14px 0 0;font-size:13.5px;max-width:82ch}
+  .ckb b{display:block;margin-bottom:3px}
+  .ckb ul{margin:6px 0 0;padding-left:17px}
   .found{margin:12px 0 0;padding:10px 12px;border:1px dashed var(--dear);font-size:13.5px;max-width:78ch}
   .found b{color:var(--dear)}
   .found ul{margin:6px 0 0;padding-left:17px}
@@ -162,6 +166,7 @@
   <section aria-labelledby="h-tally">
     <h2 id="h-tally">The score so far · every figure assumed</h2>
     <div class="tally" id="tally"></div>
+    <p class="sum" id="cross"></p>
     <p class="note" id="tallynote"></p>
     <div class="dials" id="dials"></div>
   </section>
@@ -185,6 +190,8 @@
     </div>
   </section>
 
+  <p class="foot"><a href="checklist.html">Run sheet</a> — what to check at each stage of the assisted
+    process, and what each item prevents. Written as instructions; this page is not.</p>
   <p class="foot" id="limits"></p>
 </div>
 <div class="sr" id="live" aria-live="polite"></div>
@@ -286,6 +293,10 @@ const CONV_COPY={
  6:['QA, once the build is finished.','Testing runs as a phase of its own, after there is something to test. Test cases are written from the designs, so coverage is as good as the list of situations agreed at concept.','A list of defects, and a decision about which of them block release.','The flows behave as they were designed to. What turns up here is the situations that were never in the design, and fixing those reopens the concept work rather than the build.'],
  7:['Product manager, and the release process.','The feature goes out and what it does is read afterwards. Anything the tests did not cover is found here, by whoever meets it first.','A released feature, and whatever the analytics show.','What the tests could not cover surfaces in the days after release — found by customers and by the support team rather than by the people who built it.'],
  8:['Whoever is still on the project.','A meeting at the end. What went well and badly is discussed, and what was learned is a field on a template.','Notes from a meeting.','The model assumes what this phase produces does not reach the next project, which is what its 0.2 assumed days encodes. That is an assumption rather than an observation, and it is editable in the panel below.']};
+/* the spec levels in prose, for sentences rather than buttons. One definition: the record summary and the
+   checklist block both read from it, and two copies would drift. */
+const LVL_PLAIN={thin:'notes on the designs',human:'a write-up for the team',
+                 triad:'documents for the team, the tools and the tests'};
 const LEVELS=[
  ['thin','Notes on the designs','Comments on the design files and a conversation with the developers. Nothing written for the AI tools to build from, and no separate list of what the tests must check.'],
  ['human','Written up for the team','One document people can read: every flow, every state, the words on screen, the accessibility requirements. Nothing written specifically for the tools or for the tests.'],
@@ -367,6 +378,16 @@ function convUpTo(conv,idx,a){
   return {rows:r.rows,effort,calendarDays:effort*a.calendarFromEffort,reviewHours:r.reviewHours,
     loops:r.loops+e.rework.length,found:r.found.concat(e.found),
     escaped:r.escaped.concat(e.found.filter(x=>x.caught===PROD_STAGE))};
+}
+/* Which of the six paths cost more than the conventional run under the assumptions currently entered.
+   Reported, not advised: the crossover is where these numbers put it, and every one of them is editable. */
+function crossover(a){
+  const conv=upTo(run('conventional',null,true,CONVENTIONAL_PHASES,a),Infinity,a).effort, over=[];
+  [[false,'prototypes deleted'],[true,'prototype kept']].forEach(([kept,kl])=>LEVELS.forEach(l=>{
+    if(upTo(run('assisted',l[0],kept,ASSISTED_STAGES,a),Infinity,a).effort>conv)
+      over.push(l[1].toLowerCase()+', '+kl);
+  }));
+  return {conv,over};
 }
 function scaleMax(a){
   const conv=upTo(run('conventional',null,false,CONVENTIONAL_PHASES,a),Infinity,a).effort;
@@ -577,6 +598,16 @@ function drawTally(now,convAll,convNow,idx){
     `<div class="tile"><span class="lab">${esc(k)}</span><span class="big">${v}</span>`+
     `<span class="sub"><b>${cv}</b> the familiar way</span>`+
     `<span class="sub">${esc(s)}</span></div>`).join('');
+  const x=crossover(state.assumptions), n=x.over.length;
+  document.getElementById('cross').textContent=n
+    ?(n===6?`Under the assumptions currently entered, every one of the six possible paths costs more in `+
+       `total than the familiar way.`
+      :`Under the assumptions currently entered, ${n===1?'one path costs':n+' of the six possible paths cost'} `+
+       `more in total than the familiar way: ${n>1?x.over.slice(0,-1).join('; ')+'; and '+x.over[n-1]:x.over[0]}.`)+
+     ` Whether AI is faster here is not a property of AI. It is a property of these numbers, and you can `+
+     `change all of them below.`
+    :`Under the assumptions currently entered, none of the six possible paths costs more in total than the `+
+     `familiar way. Change the numbers below and that can stop being true.`;
   const ph=CONVENTIONAL_PHASES.find(p=>p.n===alignedPhaseMax(idx));
   document.getElementById('tallynote').textContent=
     `Every figure is assumed, not measured. Both columns are read at the same point in the story: the `+
@@ -605,8 +636,7 @@ function drawRecord(asst,now,convAll,idx){
   const said=(n,cap)=>n===0?(cap?'No':'no')+' problems':n===1?'1 problem':n+' problems';
   document.getElementById('record').innerHTML=
     `<p class="sum">You ${state.probesKept?'kept the prototype':'deleted the prototypes'} at stage 4, and at stage 5 `+
-    `you wrote ${esc({thin:'notes on the designs',human:'a write-up for the team',
-      triad:'documents for the team, the tools and the tests'}[state.specLevel])}. `+
+    `you wrote ${esc(LVL_PLAIN[state.specLevel])}. `+
     `${said(fixed,1)} ${fixed===1?'was':'were'} found and fixed inside the run, and `+
     `${said(now.escaped.length)} reached customers. This run comes to ${f1(now.effort)} assumed person-days `+
     `against ${f1(convAll.effort)} for the same brief delivered the familiar way — `+
@@ -622,11 +652,33 @@ function drawRecord(asst,now,convAll,idx){
     `the number of problems reaching customers alone. Reached customers: `+
     `${now.escaped.length} against ${convAll.escaped.length}. Stages reopened: ${now.loops} against `+
     `${convAll.loops}. Review hours: ${f1(now.reviewHours)} against ${f1(convAll.reviewHours)}.</p>`+
+    checklistBlock(now)+
     (asst.defs.some(x=>x.caught<SPEC_STAGE)?`<p class="note">Why some problems are found before stage 5 even `+
       `though the choice is made there: what you chose decides how completely stage 3's work was written down, `+
       `so a problem that writing it down would have exposed at stage 3 is costed at stage 3.</p>`:'');
 }
 
+/* What this run would put on a real project's checklist. Reported from the table, not advised: for each
+   problem that reached customers, the stage the model catches it at when more is written down. The run
+   sheet is where the same material is written as instructions. */
+function checklistBlock(now){
+  const items=now.escaped.map(x=>{
+    const c=x.d.caughtAt, earliest=Math.min(...LEVELS.map(l=>c[l[0]]));
+    /* the thinnest level that achieves the earliest catch, not the fullest — LEVELS is ordered by how
+       much gets written, and crediting the triad for what a team write-up already catches overstates it */
+    const lv=LEVELS.find(l=>c[l[0]]===earliest);
+    return earliest<PROD_STAGE
+      ?`${x.d.id} reached customers here. With ${esc(LVL_PLAIN[lv[0]])}, the model catches it at stage `+
+       `${earliest}.`
+      :`${x.d.id} reached customers here, and no level of writing things down catches it in this model — `+
+       `it is in the run because the prototype was kept.`;
+  });
+  return `<div class="ckb"><b>What this run would put on a checklist</b><ul>`+
+    (items.length?items.map(t=>`<li>${t}</li>`).join('')
+      :`<li>Nothing reached customers on this path.</li>`)+
+    `</ul><p class="note">The run sheet lists what to check at each stage and what each item prevents, `+
+    `written as instructions rather than as results: <a href="checklist.html">checklist.html</a>.</p></div>`;
+}
 /* ---------- assumptions panel ---------- */
 const FIELDS=[
   ['What a problem costs',null,null],

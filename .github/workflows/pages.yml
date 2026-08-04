@@ -23,11 +23,14 @@ jobs:
 
       # demo.html stays the single source. The site root serves a copy of it, so
       # the deployed URL needs no redirect page and the repo carries no duplicate.
+      # checklist.html ships alongside it because the two link to each other by
+      # relative path — deploying one without the other leaves a dead link.
       - name: Stage the site
         run: |
           mkdir -p _site
           cp demo.html _site/demo.html
           cp demo.html _site/index.html
+          cp checklist.html _site/checklist.html
           touch _site/.nojekyll
 
       - uses: actions/upload-pages-artifact@v3

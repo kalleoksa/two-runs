@@ -204,6 +204,37 @@ what gets written rather than what results, and the three must stay parallel in 
 one option reading longer or heavier than the others is itself a hint of correctness.
 | Assumption inputs | `type="number"`, `step` appropriate to magnitude, immediate recompute on change. Reject negatives and non-numeric; keep last valid value. |
 
+## The crossover
+
+Stated on screen, computed on every render from whatever is in `state.assumptions`:
+
+```
+crossover(a) = for each of the six paths (probesKept × specLevel), total effort compared against the
+               conventional total; report which exceed it
+```
+
+Reported, never advised — the sentence says the crossover is a property of these numbers rather than of
+AI, and names how many of the six paths sit above the line. It must recompute with the assumptions like
+every other figure; a hardcoded count here would be the same latent bug as any other stated magnitude.
+A test user reached this conclusion unaided from the totals, which is why it earned a place on the page:
+*"valitsemalla väärin saattaa AI versiosta tulla kalliimpi/hitaampi kuin ns. vanhalla tavalla."*
+
+## `checklist.html` — the run sheet
+
+A second file, and the only one allowed to instruct. Constraints:
+
+- One file, no script of any kind, no state, no network. Nothing to make deterministic because nothing
+  runs.
+- The same design tokens and type treatment as `demo.html`. Print CSS: a stage block must not split
+  across a page, because the point of it is to be beside you on paper.
+- **No figures.** No days, hours, multipliers, counts of effort or percentages. Stage numbers and problem
+  ids are identifiers, not magnitudes, and are expected.
+- One block per assisted stage, numbered and named exactly as `ASSISTED_STAGES` names them. Drift between
+  the two files is a defect — `SPEC-tests.md` H3 is the script that catches it.
+- Every item cites the problem it prevents by id and label tag, matching `DEFECTS`, or is marked
+  *authored*. Both decision points get a box stating what each option commits you to, as conditionals
+  rather than verdicts.
+
 ## Forbidden
 
 - Do not tune the numbers so the triad path wins by more than the assumptions produce.
